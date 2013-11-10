@@ -1,0 +1,155 @@
+
+void collision_speed2(round_object *a, round_object *b) {
+	u16 alfa; //angle formed between the horizontal and the round_object 1&2 
+/*
+	float uai,uaj;
+	float ubi,ubj;
+	float vai,vaj;
+	float vbi,vbj;*/
+	float dist_y=0;
+	float dist_x=0;
+
+//new x and y axes -> i and j axes
+
+alfa=PA_GetAngle(a->x, a->y, b->x,  b->y);
+//alfa=PA_GetAngle(1, 1, 5,  5);
+/*
+uai=(a->vx*PA_Cos(alfa)/256.0)+(a->vy*PA_Sin(alfa)/256.0);
+uaj=-(a->vx*PA_Sin(alfa)/256.0)+(a->vy*PA_Cos(alfa)/256.0);
+ubi=(b->vx*PA_Cos(alfa)/256.0)+(b->vy*PA_Sin(alfa)/256.0);
+ubj=-(b->vx*PA_Sin(alfa)/256.0)+(b->vy*PA_Cos(alfa)/256.0);
+*/
+base_change(alfa,a,b);
+vai=(2*b->massa*b->vx+(a->massa-b->massa)*a->vx)/(a->massa+b->massa);
+vbi=(2*a->massa*a->vx+(b->massa-a->massa)*b->vx)/(a->massa+b->massa);
+a->vx=vai;
+b->vx=vbi;
+/*
+vai=(2*b->massa*ubi+(a->massa-b->massa)*uai)/(a->massa+b->massa);
+vbi=(2*a->massa*uai+(b->massa-a->massa)*ubi)/(a->massa+b->massa);
+vaj=uaj;
+vbj=ubj;
+*/
+PA_OutputText(1,0,6,"alfa=%f2 ",alfa/512.0*360.0);
+//PA_OutputText(1,0,6,"alfa=%d",alfa);
+PA_OutputText(1,0,7,"avx=%f2 avy=%f2",a->vx,a->vy);
+PA_OutputText(1,0,8,"bvx=%f2, bvy=%f2",b->vx,b->vy);
+/*
+a->vx=vai;
+a->vy=vaj;
+b->vx=vbi;
+b->vy=vbj;
+*/
+base_change(-alfa,a, b);
+/*
+PA_OutputText(1,0,9,"uai=%f2 uaj=%f2",uai,uaj);
+PA_OutputText(1,0,10,"ubi=%f2, ubj=%f2",ubi,ubj);
+PA_OutputText(1,0,11,"vai=%f2, vaj=%f2",vai,vaj);
+PA_OutputText(1,0,12,"vbi=%f2, vbj=%f2",vbi,vbj);
+
+PA_OutputText(1,0,13,"avx=%f2, avy=%f2",a->vx,a->vy);
+PA_OutputText(1,0,14,"bvx=%f2, bvy=%f2",b->vx,b->vy);
+
+*/
+
+
+
+
+while (!Pad.Held.A) 	PA_WaitForVBL();
+
+/*
+//no borres esto, son mis nuevas formulas
+
+	u16 alfa; //angle formed between the horizontal and the round_object 1&2 
+	float ua; //speed before collision
+	float ub;
+	float uai,uaj;
+	float ubi,ubj;
+	float vai,vaj;
+	float stepA,stepB,stepC;
+	float vbi_neg,vbi_pos,vbj;
+	float vai_neg,vai_pos;
+	float dist_y=0;
+	float dist_x=0;
+
+ua=sqrt(a->vx*a->vx+a->vy*a->vy);
+ub=sqrt(b->vx*b->vx+b->vy*b->vy);
+//new x and y axes -> i and j axes
+alfa=PA_GetAngle(a->x, a->y, b->x,  b->y);
+uai=ua*(PA_Cos(alfa)/256.0);
+uaj=ua*(PA_Sin(alfa)/256.0);
+ubi=ub*(PA_Cos(alfa)/256.0);
+ubj=ub*(PA_Sin(alfa)/256.0);
+//Conservació de la energia cinètica  1/2*m1*va²+1/2*m2*vb²=1/2*m1*ua²+1/2*m2*ub²
+//vbi=(sqrt(a->massa*(uai*uai-vai*vai)/b->massa+ub1*ubi));
+//vai=b->massa(ubi-vbi)/a->massa+uai;
+stepA=b->massa*b->massa/a->massa+b->massa;
+stepB=-2*uai*b->massa-2*b->massa*b->massa*ubi/a->massa;
+stepC=-b->massa*(ubi*ubi-2*uai*ubi);
+vbi_neg=(-stepB-sqrt(stepB*stepB-4*stepA*stepC))/2*stepA;
+vbi_pos=(-stepB+sqrt(stepB*stepB-4*stepA*stepC))/2*stepA;
+vai_neg=(a->massa*uai+b->massa*ubi-b->massa*vbi_neg)/a->massa;
+vai_pos=(a->massa*uai+b->massa*ubi-b->massa*vbi_pos)/a->massa;
+PA_OutputText(1,0,7,"vbi_neg=%f2, vbi_pos=%f2",vbi_neg,vbi_pos);
+PA_OutputText(1,0,8,"vai_neg=%f2, vai_pos=%f2",vai_neg,vai_pos);
+PA_OutputText(1,0,9,"uai=%f2 ubi=%f2",uai,ubi);
+PA_OutputText(1,0,10,"uaj=%f2, ubj=%f2",uaj,ubj);
+while (!Pad.Newpress.A) 	PA_WaitForVBL();
+vai=(a->massa*uai+b->massa*ubi-b->massa*vbi_pos)/a->massa;
+vaj=uaj;
+vbj=ubj;
+*/
+/*
+	u16 alfa; //angle formed between the horizontal and the round_object 1&2 
+	float u1; //speed before collision
+	float u2;
+	float v1=0;	//speed after collision
+	float v2=0;
+	float pas1;
+	float pas2;
+	float dist_y=0;
+	float dist_x=0;
+
+	//calculate the rigth collision at the raigth time
+	alfa=PA_GetAngle(a->x, a->y, b->x,  b->y);
+	u1= sqrt(pow(a->vx,2)+pow(a->vy,2));
+	u2= sqrt(pow(b->vx,2)+pow(b->vy,2));
+	
+	////velocitats despres del xoc////
+	//Conservació de la energia cinètica  1/2*m1*v1²+1/2*m2*v2²=1/2*m1*u1²+1/2*m2*u2² --> v2=sqrt(m1*(u1²+v1²)/m2+u2²)
+	//Formula coeficient restitucio   Cr=-(V2-V1)/(u2-u1) -->	v2=-u2+u1+v1;  Cr=1 -> xoc totalment elàstic
+	//principi de conservació m1*u1 + m2*u2 = m1*v1 + m2*v2
+	//v1=(u1*(a->massa - b->massa) + u2*(2*b->massa))/(a->massa + b->massa);
+	v1=(a->massa*u1 + b->massa*u2 - (b->massa*sqrt((a->massa*(u1*u1-v1*v1)/b->massa)+u2*u2)))/a->massa;
+	//v2=-u2+u1+v1;
+	v2=sqrt((a->massa*(u1*u1-v1*v1)/b->massa)+u2*u2);
+	
+	pas1=a->massa*a->vx + b->massa*b->vx;
+	pas2=a->massa*a->vy + b->massa*b->vy;		
+
+	b->vx=v2*(PA_Cos(alfa)/256.0);
+	b->vy=v2*(PA_Sin(alfa)/256.0);
+	//PA_OutputText(1,1,9,"b.vx=%f2, b.vy=%f2",b->vx,b->vy);
+
+	a->vx=(pas1-b->massa*b->vx)/a->massa;
+	a->vy=(pas2-b->massa*b->vy)/a->massa;
+
+	b->vy*=-1; //Per pujar la vy ha de ser negativa i a l'inrevés
+	a->vy*=-1; 
+*/
+	if(dist_y<0.0) {
+		a->y-=round((a->radi+b->radi-dist_y)/2);
+		b->y+=round((a->radi+b->radi-dist_y)/2);
+	} else {
+		a->y+=round((a->radi+b->radi+dist_y)/2);
+		a->y-=round((a->radi+b->radi+dist_y)/2);
+	}
+	if(dist_x<0.0) {
+		a->x-=round((a->radi+b->radi-dist_x)/2);
+		a->x+=round((a->radi+b->radi-dist_x)/2);
+	} else {
+		a->x+=round((a->radi+b->radi+dist_x)/2);
+		a->x-=round((a->radi+b->radi+dist_x)/2);
+	}
+
+}

@@ -1,0 +1,31 @@
+PAGfx Converter, by Mollusk     www.palib.com
+If you have suggestions, problems, or anything, please mail me at mollusk@palib.info
+
+Converting PAGfx.ini
+Transparent Color : Magenta
+
+4 sprites :
+  bola : 256colors, 16x16, Pal : bola_Pal, -> bola_Sprite
+  jugador_verd : 256colors, 16x16, Pal : jugador_verd_Pal, -> jugador_verd_Sprite
+  jugador_vermell : 256colors, 16x16, Pal : jugador_vermell_Pal, -> jugador_vermell_Sprite
+  marcador : 256colors, 32x320, Pal : marcador_Pal, -> marcador_Sprite
+
+4 backgrounds :
+  campo : 8bit, 256x192, Pal : campo_Pal, -> campo_Bitmap
+  grass : EasyBg, 256x192, Pal : grass_Pal, 505 tiles -> grass_Tiles and grass_Map
+  menu : 8bit, 256x192, Pal : menu_Pal, -> menu_Bitmap
+  keyboardbg : 8bit, 256x192, Pal : keyboardbg_Pal, -> keyboardbg_Bitmap
+
+8 palettes :
+  bola_Pal, 3 colors
+  jugador_verd_Pal, 16 colors
+  jugador_vermell_Pal, 12 colors
+  marcador_Pal, 5 colors
+  campo_Pal, 96 colors
+  grass_Pal, 161 colors
+  menu_Pal, 203 colors
+  keyboardbg_Pal, 161 colors
+
+Converted in 0 minutes 1 seconds
+
+Finished !

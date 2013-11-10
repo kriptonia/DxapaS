@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/svn/xapes/!svn/ver/105/source/gfx
+END
+campo.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/xapes/!svn/ver/88/source/gfx/campo.c
+END
+campo.png
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/88/source/gfx/campo.png
+END
+PAGfx.ini
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/95/source/gfx/PAGfx.ini
+END
+sprite1.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/xapes/!svn/ver/71/source/gfx/sprite1.pal.c
+END
+marcador.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/xapes/!svn/ver/104/source/gfx/marcador.pal.c
+END
+sprite2.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/xapes/!svn/ver/71/source/gfx/sprite2.pal.c
+END
+PAGfx.log
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/95/source/gfx/PAGfx.log
+END
+PAGfx.exe
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/xapes/!svn/ver/1/source/gfx/PAGfx.exe
+END
+menu.c
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/xapes/!svn/ver/76/source/gfx/menu.c
+END
+sprite3.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/xapes/!svn/ver/71/source/gfx/sprite3.pal.c
+END
+keyboardbg.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/xapes/!svn/ver/86/source/gfx/keyboardbg.c
+END
+campo.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/xapes/!svn/ver/88/source/gfx/campo.pal.c
+END
+jugador_verd.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/xapes/!svn/ver/95/source/gfx/jugador_verd.c
+END
+keyboardbg.png
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/xapes/!svn/ver/88/source/gfx/keyboardbg.png
+END
+all_gfx.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/95/source/gfx/all_gfx.c
+END
+bola.c
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/xapes/!svn/ver/95/source/gfx/bola.c
+END
+jugador_verd.png
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/xapes/!svn/ver/71/source/gfx/jugador_verd.png
+END
+grass.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/xapes/!svn/ver/76/source/gfx/grass.c
+END
+bola.png
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/xapes/!svn/ver/71/source/gfx/bola.png
+END
+menu.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/xapes/!svn/ver/76/source/gfx/menu.pal.c
+END
+grass.png
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/88/source/gfx/grass.png
+END
+all_gfx.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/xapes/!svn/ver/95/source/gfx/all_gfx.h
+END
+jugador_vermell.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/xapes/!svn/ver/95/source/gfx/jugador_vermell.c
+END
+jugador_vermell.png
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/xapes/!svn/ver/71/source/gfx/jugador_vermell.png
+END
+keyboardbg.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/xapes/!svn/ver/86/source/gfx/keyboardbg.pal.c
+END
+jugador_verd.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/xapes/!svn/ver/104/source/gfx/jugador_verd.pal.c
+END
+bola.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/xapes/!svn/ver/104/source/gfx/bola.pal.c
+END
+marcador.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/xapes/!svn/ver/105/source/gfx/marcador.c
+END
+grass.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/xapes/!svn/ver/76/source/gfx/grass.pal.c
+END
+jugador_vermell.pal.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/xapes/!svn/ver/104/source/gfx/jugador_vermell.pal.c
+END

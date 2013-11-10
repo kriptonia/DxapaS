@@ -1,0 +1,3712 @@
+
+
+
+Network Working Group                                      J. Oikarinen
+RFC: 1459                                                       D. Reed
+                                                              Mayo 1993
+                                 Traducción al castellano: Octubre 1999
+                                Carlos García Argos (cgasoft@yahoo.com)
+
+
+
+   Protocolo de Charla Basado en Internet (Internet Relay Chat, IRC)
+
+
+Prefacio
+
+   Este documento especifica un protocolo experimental para la
+   comunidad de Internet. Se piden comentarios y sugerencias para
+   mejoras. Se ruega referirse a la edición actual de los "Estándares
+   de Protocolo Oficiales del IAB" para el estado actual de la
+   estandarización y el protocolo. La distribución de este documento
+   es ilimitada.
+
+Resumen
+
+   El Protocolo IRC se desarrolló durante los 4 últimos años desde que
+   se implementó por primera vez como un medio de comunicación
+   instantánea entre usuarios de BBS. Actualmente soporta una red
+   global de servidores y clientes, y se está extendiendo para
+   contrarrestar el crecimiento. Durante los 2 últimos años, la media
+   de usuarios conectados a la red de IRC se ha multiplicado por 10.
+
+   El protocolo IRC está basado en texto, siendo el cliente más simple
+   un programa capaz de conectarse a un servidor a través de un socket.
+
+Índice
+
+   1.  INTRODUCCIÓN ...............................................    4
+      1.1  Servidores..............................................    4
+      1.2  Clientes ...............................................    5
+         1.2.1 Operadores .........................................    5
+      1.3 Canales .................................................    5
+      1.3.1  Operadores de canal ..................................    6
+   2. LA ESPECIFICACIÓN DEL IRC ...................................    7
+      2.1 Discusión ...............................................    7
+      2.2 Códigos de caracteres ...................................    7
+      2.3 Mensajes ................................................    7
+         2.3.1  Formato de mensajes en pseudo BNF .................    8
+      2.4 Respuestas numéricas.....................................   10
+   3. Conceptos sobre IRC .........................................   10
+      3.1 Comunicación uno-a-uno ..................................   10
+      3.2 Uno-a-muchos ............................................   11
+         3.2.1 A una lista ........................................   11
+         3.2.2 A un grupo (canal) .................................   11
+         3.2.3 A una máscara de host o servidor ...................   12
+      3.3 Uno a todos .............................................   12
+
+Oikarinen & Reed                                               [Pág. 1]
+
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+         3.3.1 Cliente a cliente ..................................   12
+         3.3.2 Clientes a servidor ................................   12
+         3.3.3 Servidor a servidor ................................   12
+   4. DETALLES DE MENSAJES.........................................   13
+      4.1 Registro de conexión ....................................   13
+         4.1.1 Mensaje de clave ...................................   14
+         4.1.2 Mensaje de nick ....................................   14
+         4.1.3 Mensaje de usuario .................................   15
+         4.1.4 Mensaje de servidor ................................   16
+         4.1.5 Mensaje de Operador ................................   17
+         4.1.6 Mensaje de salida ..................................   17
+         4.1.7 Mensaje de salida del servidor .....................   18
+      4.2 Operaciones en un canal .................................   19
+         4.2.1 Mensaje de entrada al canal (JOIN) .................   19
+         4.2.2 Mensaje de salida del canal (PART) .................   20
+         4.2.3 Mensaje de modos ...................................   21
+            4.2.3.1 Modos de canal ................................   21
+            4.2.3.2 Modos de usuario ..............................   22
+         4.2.4 Mensaje de tópico ..................................   23
+         4.2.5 Mensaje de nombres .................................   24
+         4.2.6 Mensaje de lista de canales ........................   24
+         4.2.7 Mensaje de invitación a un canal ...................   25
+         4.2.8 Mensaje de expulsión temporal ......................   25
+      4.3 Peticiones y comandos del servidor ......................   26
+         4.3.1 Mensaje de versión .................................   26
+         4.3.2 Mensaje de estadísticas ............................   27
+         4.3.3 Mensaje de enlaces de servidores ...................   28
+         4.3.4 Mensaje de hora local del servidor .................   29
+         4.3.5 Mensaje de conexión servidor-servidor ..............   29
+         4.3.6 Mensaje de trazado de ruta .........................   30
+         4.3.7 Mensaje de nombre del administrador del servidor ...   31
+         4.3.8 Mensaje de información sobre el servidor ...........   31
+      4.4 Enviando mensajes .......................................   32
+         4.4.1 Mensajes privados ..................................   32
+         4.4.2 Mensajes de aviso ..................................   33
+      4.5 Peticiones de usuario ...................................   33
+         4.5.1 Petición de "WHO" ..................................   33
+         4.5.2 Petición de "WHOIS" ................................   34
+         4.5.3 Petición de "WHOWAS" ...............................   35
+      4.6 Otros mensajes ..........................................   35
+         4.6.1 Mensaje de "KILL" ..................................   35
+         4.6.2 Mensaje de "PING" ..................................   36
+         4.6.3 Mensaje de "PONG" ..................................   37
+         4.6.4 Mensajes de error ..................................   38
+   5. MENSAJES OPCIONALES .........................................   38
+      5.1 Mensaje de ausencia (AWAY) ..............................   38
+      5.2 Comando de reconfiguración del servidor .................   39
+      5.3 Comando de reinicio del servidor ........................   39
+
+
+
+
+Oikarinen & Reed                                               [Pág. 2]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+      5.4 Mensaje de invocación (SUMMON) ..........................   40
+      5.5 Mensaje de lista de usuarios ............................   40
+      5.6 Comando de mensaje a los Operadores .....................   41
+      5.7 Comando USERHOST ........................................   41
+      5.8 Comando ISON ............................................   41
+   6. RESPUESTAS ..................................................   42
+      6.1 Respuestas de error .....................................   42
+      6.2 Respuestas a comandos ...................................   47
+      6.3 Respuestas reservadas ...................................   54
+   7. AUTENTICACIÓN DE CLIENTE Y SERVIDOR .........................   54
+   8. DETALLES DE IMPLEMENTACIÓN ..................................   54
+      8.1 Protocolo de red: TCP ...................................   56
+         8.1.1 Soporte de sockets UNIX ............................   56
+      8.2 Análisis de comandos ....................................   56
+      8.3 Envío de mensajes .......................................   56
+      8.4 Vida de una conexión ....................................   57
+      8.5 Estableciendo una conexión cliente-servidor .............   57
+      8.6 Estableciendo una conexión servidor-servidor ............   57
+         8.6.1 Intercambio de información de estado al conectar ...   58
+      8.7 Finalización de conexiones cliente-servidor .............   58
+      8.8 Finalización de conexiones servidor-servidor ............   58
+      8.9 Seguimiento de cambios de nick ..........................   59
+      8.10 Control de flood de clientes ...........................   59
+      8.11 Búsquedas sin bloqueos .................................   60
+         8.11.1 Resolución de nombre de host (DNS) ................   60
+         8.11.2 Búsqueda de nombre de usuario (Ident) .............   60
+      8.12 Archivo de configuración ...............................   60
+         8.12.1 Permitir la conexión de clientes ..................   61
+         8.12.2 Operadores ........................................   61
+         8.12.3 Perimitir la conexión de servidores ...............   61
+         8.12.4 Administración ....................................   62
+      8.13 Miembros de canales ....................................   62
+   9. PROBLEMAS ACTUALES ..........................................   62
+      9.1 Escalabilidad ...........................................   62
+      9.2 Etiquetas ...............................................   62
+         9.2.1 Nicks ..............................................   62
+         9.2.2 Canales ............................................   63
+         9.2.3 Servidores .........................................   63
+      9.3 Algoritmos ..............................................   63
+   10. SOPORTE Y DISPONIBILIDAD ...................................   63
+   11. ASUNTOS DE SEGURIDAD .......................................   63
+   12. DIRECCIONES DE LOS AUTORES .................................   64
+
+
+
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                               [Pág. 3]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+1.  INTRODUCCIÓN
+
+   El protocolo IRC (Internet Relay Chat) se ha diseñado durante unos
+   años para usarse como conferencia basada en texto. Este documento
+   describe el protocolo IRC actual.
+
+   El protocolo IRC se ha desarrollado en sistemas que usan el
+   protocolo de red TCP/IP, aunque no es imperativo que esta sea la
+   única forma en que funcione.
+
+   El IRC es en sí mismo un sistema de teleconferencia que (a través
+   del modelo cliente-servidor) es adecuado para funcionar en muchas
+   máquinas en una forma distribuida. Una configuración típìca incluye
+   un único proceso (el servidor) que conforma un punto central para
+   que los clientes (u otros servidores) se conecten a él, realizando
+   los envíos y multiplexado de mensajes requeridos, así como otras
+   funciones.
+
+1.1 Servidores
+
+   El servidor forma la espina dorsal del IRC, proporcionando un punto
+   al que los clientes pueden conectar para hablar unos con otros, y un
+   punto para que otros servidores se conecten a él, formando una red
+   IRC. La única configuración de red permitida para los servidores de
+   IRC es una con forma de árbol extendido [ver figura 1], donde cada
+   servidor hace de nodo central para el resto de la red que dicho
+   servidor "ve".
+
+
+                          [ Servidor 15 ] [ Servidor 13 ] [ Servidor 14]
+                                 /                \         /
+                                /                  \       /
+    [ Servidor 11 ] ------ [ Servidor 1 ]       [ Servidor 12]
+                            /          \            /
+                           /            \          /
+               [ Servidor 2 ]          [ Servidor 3 ]
+                    /       \                      \
+                   /         \                      \
+         [ Servidor 4 ]    [ Servidor 5 ]         [ Servidor 6 ]
+           /     |   \                                 /
+          /      |    \                               /
+         /       |     \________                     /
+        /        |              \                   /
+ [ Servidor 7 ] [ Servidor 8 ] [ Servidor 9 ]   [ Servidor 10 ]
+
+                                  :
+                               [ etc. ]
+                                  :
+
+            [ Figura. 1. Formato de una red de servidores de IRC ]
+
+
+
+Oikarinen & Reed                                               [Pág. 4]
+
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+1.2 Clientes
+
+   Un cliente es cualquier cosa que se conecta a un servidor que no sea
+   otro servidor. Cada cliente se distingue de otros clientes por un
+   único nick de 9 caracteres de longitud máxima. Ver las reglas de
+   gramática de protocolo para ver lo que se puede y lo que no se puede
+   usar en un nick. Además del nick, todos los servidores deben tener
+   la siguiente información sobre todos los clientes: nombre real del
+   host desde el que conecta el cliente, el nombre de usuario del
+   cliente en ese host, y el servidor al que está conectado el cliente.
+
+1.2.1 Operadores
+
+   Para mantener un cierto orden en la red de IRC, existe una clase de
+   clientes especial (Operadores) que realizan funciones generales de
+   mantenimiento en la red. Aunque los "poderes" concedidos a un
+   un Operador pueden considerarse "peligrosos", son necesarios. Los
+   Operadores deben ser capaces de realizar tareas básicas de red como
+   desconectar y reconectar servidores para prevenir un uso prolongado
+   de mal rutado de red. Como reconocimiento de esta necesidad, el
+   protocolo explicado aquí sólo permite a los Operadores realizar
+   dichas funciones. Ver secciones 4.1.7 (SQUIT) y 4.3.5 (CONNECT).
+
+   Un poder con mayor controversia es la posibilidad de que un Operador
+   elimine un usuario de la red por la "fuerza". Por ejemplo, los
+   Operadores son capaces de cerrar la conexión entre cualquier cliente
+   y servidor. La justificación de esto es delicada ya que su abuso es
+   a la vez destructivo y molesto. Para más detalles sobre esta acción
+   ver sección 4.6.1 (KILL).
+
+1.3 Canales
+
+   Un canal es un grupo (con nombre) de uno o más clientes que reciben
+   mensajes dirigidos a ese canal. El canal se crea implícitamente al
+   unirse el primer cliente, y deja de existir cuando el último cliente
+   lo deja. Mientras el canal exista, cualquier cliente puede dirigirse
+   al canal usando el nombre de dicho canal.
+
+   Los nombres de canales son cadenas (que empiezan con '&' o '#') de
+   hasta 200 caracteres. Aparte del requisito de que el primer carácter
+   sea un '&' o un '#', la única restricción es que no puede contener
+   espacios en blanco (' '), control G (^G o ASCII 7), o una coma (',',
+   que se usa como separador de listas de parámetros).
+
+   Hay dos tipos de canales permitidos por el protocolo. Uno es un
+   canal distribuido que es conocido por todos los servidores de la
+   red. Estos canales se marcan con el primer carácter '#'. Otro tipo
+   de canales se caracteriza por ser sólo para clientes conectados al
+
+
+
+
+Oikarinen & Reed                                               [Pág. 5]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   servidor en el que se encuentra el canal. Se distinguen porque su
+   primer carácter es '&'. Por encima de estos tipos, hay modos de
+   canal que varían las características de los canales. Para más
+   detalles, ver la sección 4.2.3 (comando MODE).
+
+   Para crear un nuevo canal o formar parte de uno existente, un
+   usuario debe UNIRSE (JOIN) al canal. Si el canal no existe antes de
+   unirse, se crea y el creador del canal pasa a ser operador de canal.
+   Si el canal existe, la petición de unirse a él será aceptada o no en
+   función de los modos actuales del canal. Por ejemplo, si el canal es
+   sólo para invitados (+i), sólo podrá unirse si es invitado. Como
+   parte del protocolo, un usuario puede formar parte de varios canales
+   simultáneamente, pero se recomienda un límite de 10 canales como
+   suficiente para usuarios experimentados y novatos. Ver la sección
+   8.13 para más información.
+
+   Si la red de IRC se separa a causa de una ruptura de conexión entre
+   dos servidores, el canal en cada lado está compuesto por los
+   clientes que están conectados a los servidores a cada lado de la
+   ruptura. Cuando se rehace la conexión, los servidores que reconectan
+   anuncian al otro quién cree que está en cada canal y los modos de
+   dicho canal. Si el canal existe en ambas partes, las uniones (JOINs)
+   y modos (MODEs) se interpretan de forma inclusiva de forma que ambos
+   lados de la nueva conexión coincidan en los clientes que forman el
+   canal y los modos del mismo.
+
+1.3.1 Operadores de canal
+
+   El operador de canal (también llamado "chop" o "chanop") se le
+   considera el "dueño" de dicho canal. Como reconocimiento a ese
+   estatus, los operadores de canal poseen ciertos "poderes" que les
+   permiten mantener el control y cierto orden en su canal. Como dueño
+   del canal, el operador de canal no tiene que dar justificaciones por
+   sus actos, aunque si sus acciones son antisociales o abusivas, puede
+   ser razonable pedirle a un Operador de IRC que intervenga, o por el
+   bien de los usuarios, irse y crear su propio canal.
+
+   Los comandos que sólo pueden usar los operadores de canal son:
+
+        KICK    - Expulsar a un cliente del canal, de forma que puede
+                  volver a entrar
+        MODE    - Cambiar los modos del canal
+        INVITE  - Invitar a un usuario a un canal
+        TOPIC   - Cambiar el topic en un canal con modo +t
+
+   Un operador de canal se identifica por el símbolo '@' (arroba) que
+   precede a su nick, cuando se le asocia con un canal (respuestas a
+   los comandos NAMES, WHO y WHOIS).
+
+
+
+
+
+Oikarinen & Reed                                               [Pág. 6]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+2. LA ESPECIFICACIÓN DEL IRC
+
+2.1 Discusión
+
+   El protocolo tal y como se describe aquí se usa tanto para
+   conexiones servidor-servidor como cliente-servidor. Hay, sin
+   embargo, más restricciones en las conexiones cliente (que se
+   consideran poco fiables) que en las conexiones de servidores.
+
+2.2 Códigos de caracteres
+
+   No hay un conjunto de caracteres especificado. El protocolo está
+   basado en un conjunto de caracteres compuesto de 8 bits, formando un
+   octeto. Cada mensaje puede estar compuesto de cualquier número de
+   estos octetos; sin embargo, algunos valores de estos octetos se usan
+   para formar códigos de control que actúan como delimitadores de
+   mensajes.
+
+   A pesar de ser un protocolo de 8 bits, los delimitadores y palabras
+   clave son tales que el protocolo se puede usar desde un terminal
+   USASCII y una conexión telnet.
+
+   Debido al origen escandinavo del IRC, los caracteres {, } y | se
+   consideran las "minúsculas" de los caracteres [, ] y \,
+   respectivamente. Esto es crítico a la hora de determinar la
+   equivalencia de dos nicks.
+
+2.3 Mensajes
+
+   Servidores y clientes se envían mensajes unos a otros que pueden
+   generar o no una respuesta. Si el mensaje contiene un comando válido
+   de una de las formas descritas en secciones posteriores, el cliente
+   debería esperar una respuesta como se especifica, pero no tiene
+   porqué esperar para siempre a esa respuesta; la comunicación
+   cliente-servidor y servidor-servidor es esencialmente asíncrona.
+
+   Cada mensaje de IRC puede consistir en 3 partes principales: el
+   prefijo (opcional), el comando y los parámetros del comando (hasta
+   un total de 15). El prefijo, comando y parámetros deben estar
+   separados entre sí por uno (o más) caracteres ASCII espacio en
+   blanco (0x20).
+
+   La presencia de un prefijo se indica con el carácter dos puntos
+   (':', 0x3b), que debe ser el primer carácter del propio mensaje. No
+   debe haber espacio en blanco entre los dos puntos y el mensaje. El
+   prefijo lo usan los servidores para indicar el verdadero origen del
+   mensaje. Si el prefijo no aparece en el mensaje, se supone que
+
+
+
+
+
+Oikarinen & Reed                                               [Pág. 7]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   proviene de la conexión desde la cual se recibió. Los clientes no
+   deberían usar prefijos al enviar mensajes; si usan un prefijo, el
+   único válido es el nick registrado asociado con el cliente. Si la
+   fuente identificada por el prefijo no se encuentra en la base de
+   datos interna del servidor o si la fuente está registrada desde un
+   enlace diferente a aquel desde el cual llegó el mensaje, el servidor
+   debe ignorar el mensaje de forma silenciosa.
+
+   El comando debe ser bien un comando de IRC válido o un número de 3
+   dígitos representado en texto ASCII.
+
+   Los mensajes de IRC siempre son líneas de caracteres acabadas en un
+   par CR-LF (Carriage Return-Line Feed = Retorno de Carro-Salto de
+   Línea), y los mensajes no deben exceder los 512 caracteres de
+   longitud, incluido el par CR-LF. Por tanto, hay un máximo de 510
+   caracteres permitidos para el comando y sus parámetros. No hay
+   provisiones para líneas de continuación de mensajes. Para más
+   detalles sobre la implementación ver la sección 7.
+
+2.3.1 Formato de mensajes en 'pseudo' BNF
+
+   Los mensajes de protocolo deben extraerse de la cadena contigua de
+   octetos. La solución es asignar dos caracteres, CR y LF como
+   separadores de mensajes. Los mensajes vacíos se ignoran de forma
+   silenciosa, lo que permite el uso de la secuencia CR-LF entre
+   mensajes sin problemas.
+
+   El mensaje extraído se divide en las componentes <prefijo>,
+   <comando> y lista de parámetros formada por componentes <parámetro
+   intermedio> o <parámetro final>
+
+   La representación BNF para esto es:
+
+
+<mensaje>   ::= [':' <prefijo> <ESPACIO> ] <comando> <parámetro> <crlf>
+<prefijo>   ::= <nombre de servidor> | <nick> [ '!' <usuario> ] [ '@' <host> ]
+<comando>   ::= <letra> { <letra> } | <número> <número> <número>
+<ESPACIO>   ::= ' ' { ' ' }
+<parámetro> ::= <ESPACIO> [ ':' <parámetro final> |
+                             <parámetro intermedio> <parámetro> ]
+
+<parámetro intermedio>   ::= <Cualquier secuencia de octetos *no vacía*
+                             que no incluya ESPACIO, NUL, CR o LF, el
+                             primero del cual no puede ser ':'>
+<parámetro final> ::= <Cualquier secuencia, posiblemente *vacía* que no
+                      incluya NUL, CR o LF>
+
+<crlf>     ::= CR LF
+
+
+
+
+
+Oikarinen & Reed                                               [Pág. 8]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+NOTAS:
+
+  1)    <ESPACIO> consiste únicamente de caracteres espacio (0x20).
+        Nótese especialmente que la TABULACIÓN y otros caracteres de
+        control no se consideran espacios en blanco.
+
+  2)    Después de extraer la lista de parámetros, todos son iguales,
+        ya sean <parámetro intermedio> o <parámetro final>. Este último
+        es simplemente un truco sintáctico para permitir ESPACIO en un
+        parámetro.
+
+  3)    La razón por la cual CR y LF no pueden aparecer en parámetros
+        es un artefacto de la estructura del mensaje. Esto podría
+        cambiar más adelante.
+
+  4)    El carácter NUL no es especial en la estructuración del mensaje
+        y básicamente podría acabar en un parámetro, pero esto
+        causaría complejidades adicionales en el manejo normal de
+        cadenas de C. Por tanto, NUL no se permite en los mensajes.
+
+  5)    El último parámetro debe ser una cadena vacía.
+
+  6)    El uso del prefijo extendido (['!' <usuario> ] ['@' <host> ])
+        no debe usarse en comunicaciones servidor-servidor y sólo está
+        orientado a mensajes servidor-cliente para proporcionar a los
+        clientes información más útil sobre de quién proviene un
+        mensaje sin realizar peticiones adicionales.
+
+   La mayoría de los protocolos de mensajes especifican una semántica y
+   sintaxis adicionales para los parámetros, dictados por su posición
+   en la lista de parámetros. Por ejemplo, muchos comandos de
+   servidores supondrán que el primer parámetro después del comando es
+   la lista de objetivos, que puede describirse como:
+
+   <objetivo>  ::= <a> [ "," <objetivo> ]
+   <a>         ::= <canal> | <usuario> '@' <nombre de servidor> |
+                   <nick> | <máscara>
+   <canal>     ::= ('#' | '&') <cadena de caracteres>
+   <nombre de servidor> ::= <host>
+   <host>      ::= ver RFC 952 [DNS:4] para detalles sobre nombres de
+                    host válidos
+   <nick>      ::= <letra> { <letra> | <número> | <especial> }
+   <máscara>   ::= ('#' | '$') <cadena de caracteres>
+   <cadena de caracteres>   ::= <cualquier código de 8 bits excepto
+                                ESPACIO, BELL, NUL, CR, LF y coma (',')>
+
+   Otras sintaxis de parámetros son:
+
+   <usuario>   ::= <NO-ESPACIO> { <NO-ESPACIO> }
+   <letra>     ::= 'a' ... 'z' | 'A' ... 'Z'
+   <número>    ::= '0' ... '9'
+   <especial>  ::= '-' | '[' | ']' | '\' | '`' | '^' | '{' | '}'
+
+Oikarinen & Reed                                               [Pág. 9]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   <NO-ESPACIO>   ::= <cualquier código de 8 bits excepto ESPACIO
+                      (0x20), NUL (0x00), CR (0x0d) o LF (0x0a)>
+
+2.4 Respuestas numéricas
+
+   La mayoría de los mensajes enviados al servidor generan una
+   respuesta de alguna clase. La respuesta más común es la numérica,
+   empleada tanto para repuestas de error como para las normales. La
+   respuesta numérica debe enviarse como un mensaje compuesto por el
+   prefijo del que lo envía, el número de 3 dígitos, y el objetivo de
+   la respuesta. No se permiten respuestas numéricas provenientes de un
+   cliente; cualquier mensaje de ese tipo recibido por el servidor se
+   descartan de forma silenciosa. Una respuesta numérica es como un
+   mensaje normal, salvo que la palabra clave se crea a partir de 3
+   dígitos numéricos en lugar de una cadena de letras. Hay una lista de
+   respuestas en la sección 6.
+
+3. Conceptos sobre IRC.
+
+   Esta sección está dedicada a describir los conceptos actuales que
+   están tras la organización del protocolo IRC y cómo las actuales
+   implementaciones envían diferentes clases de mensajes.
+
+
+
+                          1--\
+                              A        D---4
+                          2--/ \      /
+                                B----C
+                               /      \
+                              3        E
+
+   Servidores: A, B, C, D, E         Clientes: 1, 2, 3, 4
+
+           [ Figura 2. Pequeña red IRC de ejemplo ]
+
+3.1 Comunicación uno-a-uno
+
+   La comunicación uno-a-uno normalmente sólo la realizan los clientes,
+   ya que la mayoría del tráfico servidor-servidor no es resultado de
+   los servidores comunicándose únicamente entre ellos. Para
+   proporcionar una forma segura de comunicación entre clientes, es
+   necesario que todos los servidores sean capaces de enviar un mensaje
+   exactamente en una dirección a través del árbol de expansión para
+   que llegue a cualquier cliente. El camino de un mensaje es el más
+   corto entre dos puntos cualesquiera del árbol.
+
+   Los siguientes ejemplos se refieren todos a la Figura 2 de arriba.
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 10]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+Ejemplo 1:
+     Un mensaje entre los clientes 1 y 2 sólo lo ve el servidor A, que
+     lo envía directamente al cliente 2.
+
+Ejemplo 2:
+     Un mensaje entre los clientes 1 y 3 lo ven los servidores A y B.
+     Ningún otro servidor o cliente puede verlo.
+
+Ejemplo 3:
+     Un mensaje entre los clientes 2 y 4 lo ven los servidores A, B, C
+     y D y el cliente 4.
+
+3.2 Uno-a-muchos
+
+   El propósito principal del IRC es proporcionar un forum que permita
+   realizar conferencias de forma sencilla y eficiente. El IRC ofrece
+   varias maneras de conseguir esto, cada una con su propósito.
+
+3.2.1 A una lista
+
+   La forma menos eficiente de comunicación uno-a-muchos se realiza a
+   través de clientes que se comunican con una "lista" de usuarios. La
+   forma en que esto se realiza es casi autoexplicatoria: el cliente da
+   una lista de destinos para un mensaje y el servidor divide la lista
+   y distribuye una copia separada del mensaje a cada destino. No es
+   tan eficiente como emplear un grupo ya que la lista de destino es
+   separada y el mensaje se envía sin asegurarse de que no se mandan
+   duplicados cada vez.
+
+3.2.2 A un grupo (canal)
+
+   En el IRC el canal tiene un papel equivalente al de un foro. Su
+   existencia es dinámica (llendo y viniendo igual que la gente
+   entrando y saliendo de los canales), y la conversación se envía
+   únicamente a los servidores que tienen usuarios en el canal. Si hay
+   múltiples usuarios en un servidor en el mismo canal, el mensaje sólo
+   se envía una vez a ese servidor y desde él a cada cliente del canal.
+   Esto se repite para cada combinación cliente-servidor hasta que el
+   mensaje original se ha enviado a cada miembro del canal.
+
+   Los siguientes ejemplos se refieren a la Figura 2.
+
+Ejemplo 4:
+     Un canal con un cliente en él. Los mensajes al canal van al
+     servidor y a ninguna parte más.
+
+Ejemplo 5:
+     2 clientes en un canal. Todos los mensajes atraviesan un camino
+     igual que si fuesen mensajes privados entre dos clientes fuera de
+     un canal.
+
+
+
+Oikarinen & Reed                                              [Pág. 11]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+Ejemplo 6:
+     Los clientes 1, 2 y 3 en un canal. Todos los mensajes se envían a
+     todos los clientes y sólo a los servidores que tienen que
+     recorrerse si fuese un mensaje privado a un único cliente. Si el
+     cliente 1 envía un mensaje, va al cliente 2 y, via el servidor B
+     al cliente 3.
+
+3.2.3 A una máscara de host o servidor
+
+   Para proveer a los Operadores de IRC de mecanismos para enviar
+   mensajes a muchos usuarios relacionados, se proporcionan mensajes a
+   host y máscara de servidor. Estos mensajes se envían a usuarios cuya
+   información de host o servidor coincide con la de la máscara. Los
+   mensajes se envían únicamente a los sitios en los que están esos
+   usuarios, de forma similar a los canales.
+
+3.3 Uno-a-todos
+
+   El tipo de mensaje uno-a-todos se describe como un mensaje de
+   emisión, enviado a todos los clientes, servidores o ambos. En una
+   red grande, un solo mensaje puede resultar en mucho tráfico a través
+   de la red en un intento de hacerlo llegar a todos los destinos.
+
+   Para algunos mensajes no hay otra opción que enviarla a todos los
+   servidores para que la información manejada por cada servidor sea
+   razonablemente consistente entre servidores.
+
+3.3.1 Cliente-a-cliente
+
+   No existe una clase de mensaje que, a partir de un mensaje único,
+   resulte en que el mensaje se envíe a todos los demás clientes.
+
+3.3.2 Cliente-a-servidor
+
+   La mayoría de los comandos que resultan en un cambio en la
+   información sobre el estado (miembros de canal, modos de canal,
+   estado de usuario, etc) deben ser enviados a todos los servidores, y
+   esta distribución no puede ser cambiada por el cliente.
+
+3.3.3 Servidor-a-servidor.
+
+   Mientras la mayoría de los mensajes entre servidores se distribuyen
+   a todos "los demás" servidores, esto sólo es necesario para un
+   mensaje que afecte bien a un usuario, un canal o un servidor. Dado
+   que estos son partes necesarias del IRC, casi todos los mensajes
+   originados de un servidor se envían a todos los demás servidores
+   conectados.
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 12]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4. DETALLES DE MENSAJES
+
+   En las páginas siguientes hay descripciones sobre cada mensaje que
+   reconocen el servidor y el cliente IRC. Todos los comandos descritos
+   en esta sección deben implementarse en cualquier servidor que siga
+   el protocolo.
+
+   Cuando se liste la respuesta ERR_NOSUCHSERVER (error, no existe el
+   servidor), significa que el parámetro <servidor> no se encontró. El
+   servidor no debe enviar ninguna otra respuesta para ese comando.
+
+   El servidor al que se conecta el cliente debe analizar el mensaje
+   completo, devolviendo los errores oportunos. Si el servidor
+   encuentra algún error fatal en el análisis de un mensaje, debe
+   enviarse un mensaje de error y finalizar el análisis. Un error fatal
+   puede ser un comando incorrecto, un destino que sea desconocido para
+   el servidor (en esta categoría entran servidores, nicks o canales),
+   parámetros que falten o privilegios incorrectos.
+
+   Si se presenta un conjunto completo de parámetros, cada uno debe
+   comprobarse que es válido y se enviarán las respuestas apropiadas al
+   cliente. En caso de mensajes que usan listas de parámetros separados
+   por comas tienen que enviarse respuestas para cada uno por separado.
+
+   En los ejemplos de abajo, algunos mensajes aparecen en formato
+   completo:
+
+   :Nombre COMANDO lista de parámetros
+
+   Estos ejemplos representan un mensaje, proveniente de "Nombre",
+   entre servidores, donde es fundamental incluir el nombre del emisor
+   original del mensaje para que los servidores remotos puedan enviar
+   una respuesta a través del camino correcto.
+
+4.1 Registro de conexión
+
+   Los comandos descritos aquí se usan para registrar una conexión con
+   un servidor de IRC tanto si se trata de un usuario como si es otro
+   servidor, además de las desconexiones.
+
+   No se requiere un comando "PASS" (de password) para que se registre
+   cada conexión de un cliente o servidor, pero debe preceder el
+   mensaje del servidor o lo último de la combinación NICK/USUARIO. Se
+   recomienda encarecidamente que las conexiones de servidor tengan una
+   clave de acceso para dar un grado de seguridad a las conexiones. El
+   orden recomendado para el registro de un cliente es el siguiente:
+
+   1. Mensaje de Password
+   2. Mensaje de Nick
+   3. Mensaje de Usuario
+
+
+
+Oikarinen & Reed                                              [Pág. 13]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4.1.1 Mensaje de Password
+
+
+      Comando: PASS
+   Parámetros: <password>
+
+   El comando PASS se usa para establecer una "clave de conexión". La
+   clave puede y debe establecerse antes de cualquier intento de
+   realizar la conexión. Esto requiere que los clientes envíen el
+   comando PASS antes de la combinación NICK/USUARIO, y los servidores
+   *deben* enviar el comando PASS antes de cualquier comando SERVER. La
+   clave debe coincidir con una de las líneas C/N (para servidores) o
+   las I (para clientes). Es posible enviar múltiples comandos PASS
+   antes del registro pero sólo la última que se envía se verifica y no
+   puede cambiarse una vez hecho el registro. Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_ALREADYREGISTRED
+
+   Ejemplo:
+
+           PASS clavesecretaaquí
+
+4.1.2 Mensaje de Nick
+
+      Comando: NICK
+   Parámetros: <nick> [ <contadordesalto> ]
+
+   El mensaje de NICK se usa para darle al usuario un nick o cambiar el
+   anterior. El parámetro <contadordesalto> se usa únicamente por los
+   servidores para indicar cómo de lejos está el nick del servidor. Una
+   conexión local tiene un contador de salto igual a 0. Si lo envía un
+   cliente, se ignora.
+
+   Si llega un mensaje NICK a un servidor que ya tiene un nick idéntico
+   para otro cliente, ocurre una colisión de nick. Como resultado de
+   esto, se eliminan todas las referencias del nick de la base de datos
+   del servidor, y se ejecuta un comando KILL para eliminar el nick de
+   las bases de datos de los demás servidores. Si el mensaje NICK que
+   causó la colisión fue un cambio de nick, el nick original (antiguo)
+   también debe eliminarse.
+
+   Si el servidor recibe un nick idéntifo de un cliente que está
+   conectado directamente, puede enviar un mensaje ERR_NICKCOLLISION al
+   cliente local, ignorar el comando NICK y no ejecutar ningún comando
+   KILL.
+
+   Respuestas numéricas:
+
+           ERR_NONICKNAMEGIVEN             ERR_ERRONEUSNICKNAME
+           ERR_NICKNAMEINUSE               ERR_NICKCOLLISION
+
+
+
+Oikarinen & Reed                                              [Pág. 14]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Ejemplo:
+
+   NICK Wiz                        ; Introduciendo nuevo nick "Wiz".
+
+   :WiZ NICK Kilroy                ; WiZ cambia su nick a Kilroy.
+
+4.1.3 Mensaje de Usuario
+
+      Comando: USER
+   Parámetros: <nombre de usuario> <nombre de host>
+               <nombre de servidor> <nombre real>
+
+   El mensaje USER se usa al principio de cada conexión para indicar
+   el nombre de usuario, de host y servidor y el nombre real del nuevo
+   usuario. Se usa también en la comunicación entre servidores para
+   indicar que un nuevo usuario llega a la red de IRC, ya que sólo
+   tras recibirse los mensajes USER y NICK del cliente queda registrado
+   el usuario.
+
+   Entre servidores el nick del cliente debe preceder al mensaje de
+   USER. Nótese que el nombre de host y servidor normalmente se ignoran
+   por el servidor cuando el comando USER viene desde un cliente
+   conectado directamente (por razones de seguridad), pero se usan en
+   comunicaciones servidor a servidor. Esto quiere decir que un nick
+   debe enviarse siempre a un servidor remoto cuando entra un nuevo
+   usuario a la red antes de enviarse el mensaje USER.
+
+   El parámetro <nombre real> debe ser el último, ya que puede contener
+   espacios en blanco y debe ir precedido por dos puntos (":") para
+   asegurarse de que se reconoce como tal.
+
+   Dado que es fácil para un cliente mentir sobre el nombre de usuario
+   apoyado únicamente en el mensaje USER, se recomienda el empleo de un
+   "Servidor de Identidad". Si el host desde el que conecta un usuario
+   tiene ese servidor activado, el nombre de usuario es el que
+   proporciona dicho servidor.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_ALREADYREGISTRED
+
+   Ejemplos:
+
+
+   USER guest tolmoon tolsun :Ronnie Reagan
+                                   ;El usuario se registra con nombre
+                                   de usuario "guest" y nombre real
+                                   "Ronnie Reagan".
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 15]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+   :testnick USER guest tolmoon tolsun :Ronnie Reagan
+                                   ;mensaje entre servidores con el
+                                   nick al que pertenece el comando
+                                   USER
+
+4.1.4 Mensaje de Servidor
+
+      Comando: SERVER
+   Parámetros: <nombre de servidor> <contador de salto> <información>
+
+   El mensaje de servidor se usa para indicar a un servidor que el otro
+   lado de la conexión es un servidor. También se emplea para enviar
+   datos sobre servidores a través de toda la red. Cuando se conecta un
+   nuevo servidor a la red, debe enviarse información sobre él al resto
+   de la red. El <contador de salto> se usa para dar a los servidores
+   información interna sobre cómo de lejos están todos los servidores.
+   Con una lista completa de los servidores, sería posible construir un
+   mapa completo del árbol de servidores, pero las máscaras de host lo
+   evitan.
+
+   El mensaje SERVER sólo debe aceptarse desde (a) una conexión
+   pendiente de ser registrada y que se intenta registrar como servidor
+   o (b) una conexión existente a otro servidor, en cuyo caso el
+   mensaje SERVER introduce un nuevo servidor tras ese servidor.
+
+   La mayoría de los errores que ocurren al recibirse el comando SERVER
+   acaban en una finalizacion de la conexión por parte del host de
+   destino (servidor objetivo). Las respuestas de error se envían
+   normalmente usando el comando "ERROR" en lugar de una respuesta
+   numérica ya que el comando ERROR tiene propiedades que le hacen
+   útil en este caso.
+
+   Si un mensaje de SERVER se analiza e intenta introducir un servidor
+   que ya es conocido por el servidor destino, la conexión de la que
+   vino el mensaje debe cerrarse (siguiendo los procedimientos
+   adecuados), ya que se forma una ruta doble a un servidor y por tanto
+   la naturaleza acíclica del árbol de la red IRC.
+
+   Respuestas numéricas:
+
+           ERR_ALREADYREGISTRED
+
+   Ejemplo:
+
+SERVER test.oulu.fi 1 :[tolsun.oulu.fi] Servidor experimental
+                                ; El nuevo servidor test.oulu.fi se
+                                presenta e intenta registrarse. El
+                                nombre entre corchetes es el nombre de
+                                host que lleva test.oulu.fi.
+
+
+
+Oikarinen & Reed                                              [Pág. 16]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+
+:tolsun.oulu.fi SERVER csd.bu.edu 5 :BU Servidor central
+                                ; Servidor tolsun.oulu.fi es el enlace
+                                superior de csd.bu.edu, que está a 5
+                                saltos.
+
+4.1.5 Oper
+
+      Comando: OPER
+   Parámetros: <usuario> <password>
+
+   El comando OPER se usa para que un usuario normal obtenga
+   privilegios de Operador. La combinación <usuario> y <password> es
+   necesaria para conseguir los privilegios de Operador.
+
+   Si el cliente que envía el comando de OPER da un password correcto
+   para el usuario dado, el servidor informa al resto de la red del
+   nuevo Operador ejecutando un comando "MODE +O" para el nick del
+   cliente.
+
+   El mensaje OPER es exclusivamente cliente-servidor.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              RPL_YOUREOPER
+           ERR_NOOPERHOST                  ERR_PASSWDMISMATCH
+
+   Ejemplo:
+
+   OPER foo bar                    ; Intenta registrarse como Operador
+                                   usando el nombre de usuario "foo" y
+                                   la clave "bar"
+
+4.1.6 Mensaje de salida
+
+      Comando: QUIT
+   Parámetros: [<Mensaje de salida>]
+
+   Una sesión de un cliente se finaliza con un mensaje de salida. El
+   servidor debe cerrar la conexión con un cliente que envía un mensaje
+   de salida. Si se da un <Mensaje de salida>, éste se enviará en lugar
+   del mensaje por defecto, el nick.
+
+   Cuando hay netsplits (desconexión de dos servidores), el mensaje de
+   salida está formado por los nombres de los servidores involucrados,
+   separados por un espacio. El primer nombre es el servidor que aún
+   está conectado, el segundo el que ha desconectado.
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 17]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Si, por cualquier otra razón, se cierra la conexión con un cliente
+   sin que el cliente envíe el comando QUIT (ej: el cliente muere y hay
+   un EOF - End Of File - en el socket), el servidor debe rellenar el
+   mensaje de salida con un mensaje que refleje la naturaleza de la
+   causa que ha hecho que ocurra.
+
+   Respuestas numéricas:
+
+           Ninguna.
+
+   Ejemplos:
+
+   QUIT :Me voy a comer        ; Formato de mensaje
+
+4.1.7 Mensaje de salida del servidor
+
+      Comando: SQUIT
+   Parámetros: <servidor> <comentario>
+
+
+   El mensaje SQUIT se necesita para tratar los servidores que
+   desconectan. Si un servidor quiere terminar la conexión con otro
+   servidor, debe enviar un mensaje SQUIT al otro servidor, con el
+   nombre del otro servidor como parámetro, lo que cierra su conexión
+   con el servidor que desconecta.
+
+   Este comando está disponible a los Operadores para ayudar a mantener
+   una red de IRC conectada de forma ordenada. Los Operadores también
+   pueden ejecutar un comando SQUIT para una conexión remota entre
+   servidores. En este caso, el SQUIT debe analizarse por cada servidor
+   entre el Operador y el servidor remoto, actualizando el esquema de
+   la red mantenida por cada servidor de la forma que se explica más
+   abajo.
+
+   El <comentario> debe ser indicado por los Operadores que ejecuten un
+   SQUIT para un servidor remoto (esto es, uno que no está conectado al
+   servidor en el que se encuentre el Operador), de forma que los demás
+   Operadores sepan la causa de la desconexión. El <comentario> también
+   lo rellenan los servidores, pudiendo incluir mensajes de error.
+
+   Se requiere que los dos servidores a cada lado de la conexión que
+   finaliza envíen un mensaje SQUIT (a todas sus conexiones con otro
+   servidor), para que lo reciban todos los servidores detrás de ese
+   enlace.
+
+   De la misma forma, un mensaje QUIT debe enviarse a los demás
+   servidores conectados a la red en representación de todos los
+   clientes tras ese enlace. Además, todos los miembros de un canal que
+   pierdan un miembro debido al split deben recibir un mensaje de
+   QUIT.
+
+
+
+Oikarinen & Reed                                              [Pág. 18]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Si una conexión con un servidor finaliza prematuramente (ej: se cae
+   el servidor en el otro lado del enlace), el servidor que detecte la
+   desconexión debe informar al resto de la red que la conexión se ha
+   cerrado y rellenar el campo de comentario con algo apropiado.
+
+   Respuestas numéricas:
+
+           ERR_NOPRIVILEGES                ERR_NOSUCHSERVER
+
+   Ejemplo:
+
+   SQUIT tolsun.oulu.fi :¿Enlace erróneo? ;El enlace del servidor
+                                          tolson.oulu.fi ha finalizado
+                                          por "Enlace erróneo"
+
+   :Trillian SQUIT cm22.eng.umd.edu : Servidor fuera de control
+                                     ; Mensaje de servidor fuera de
+                                      control de Trillian para que
+                                      desconecte "cm22.eng.umd.edu" por
+                                      "Servidor fuera de control"
+
+4.2 Operaciones en un canal
+
+   Este grupo de mensajes se refiere a la manipulación de canales, sus
+   propiedades (modos de canal) y sus contenidos (normalmente clientes).
+   Al implementarlos, son inevitables unas condiciones de "carrera",
+   cuando clientes en lados opuestos de una red envíen comandos que
+   acabarán colisionando. También se requiere que el servidor mantenga
+   un historial para verificar, cuando se de un parámetro <nick> si
+   éste ha cambiado.
+
+4.2.1 Mensaje de entrada al canal (JOIN)
+
+      Comando: JOIN
+   Parámetros: <canal>{,<canal>} [<clave>{,<clave>}]
+
+   El comando JOIN lo usa el cliente para empezar a escuchar un canal
+   específico. El que se permita a un cliente entrar al canal o no lo
+   verifica solamente el servidor al que está conectado el cliente; los
+   demás servidores automáticamente añaden el usuario al canal cuando
+   reciben el mensaje de otros servidores. Las condiciones que debe
+   cumplir el cliente son:
+
+           1. el usuario debe ser invitado si el canal está en modo
+              sólo invitados;
+
+           2. el <nick>/<nombre de usuario>/<nombre de host> del usuario
+              no debe cumplir ninguno de los bans activos;
+
+           3. debe pasarse la clave correcta si está activa en el canal.
+
+
+
+Oikarinen & Reed                                              [Pág. 19]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Esto se discute con mayor detalle bajo el comando MODE (ver sevvión
+   4.2.3 para más información).
+
+   Una vez que el usuario ha entrado al canal, recibe anuncios sobre
+   todos los comandos que su servidor recibe que afecten al canal. Esto
+   incluye MODE, KICK, PART, QUIT y por supuesto PRIVMSG/NOTICE. El
+   comando JOIN debe enviarse a todos los servidores para que cada
+   servidor sepa dónde encontrar los usuarios de un canal. Esto permite
+   un envío óptimo de mensajes PRIVMSG/NOTICE al canal.
+
+   Si se consigue entrar al canal, se envía al usuario el "topic" del
+   canal (usando RPL_TOPIC) y la lista de usuarios que están en el
+   canal (usando RPL_NAMREPLY), que debe incluir el usuario recién
+   entrado.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_BANNEDFROMCHAN
+           ERR_INVITEONLYCHAN              ERR_BADCHANNELKEY
+           ERR_CHANNELISFULL               ERR_BADCHANMASK
+           ERR_NOSUCHCHANNEL               ERR_TOOMANYCHANNELS
+           RPL_TOPIC
+
+   Ejemplos:
+
+   JOIN #foobar                    ; unirse al canal #foobar.
+
+   JOIN &foo fubar                 ; unirse al canal &foo usando como
+                                     clave "fubar".
+
+   JOIN #foo,&bar fubar            ; unirse al canal #foo usando la
+                                     clave "fubar" y &bar sin clave.
+
+   JOIN #foo,#bar fubar,foobar     ; unirse al canal #foo con la clave
+                                     "fubar" y el canal #bar clave
+                                     "foobar".
+
+   JOIN #foo,#bar                  ; unirse a los canales #foo and #bar
+
+   :WiZ JOIN #Twilight_zone        ; mensaje JOIN de WiZ
+
+4.2.2 Mensaje de salida del canal (PART)
+
+      Comando: PART
+   Parámetros: <canal>{,<canal>}
+
+   El mensaje de salida provoca el borrado de la lista de usuarios
+   activos de todos los canales dados en la lista de parámetros.
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 20]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+           ERR_NOTONCHANNEL
+
+   Ejemplos:
+
+   PART #twilight_zone           ; abandonar el canal "#twilight_zone"
+
+   PART #oz-ops,&group5          ; abandonar canales "&group5" y
+                                 "#oz-ops".
+
+4.2.3 Mensaje de modos
+
+      Comando: MODE
+
+   El comando MODE es un comando de doble propósito en el IRC. Permite
+   cambiar los modos tanto a los usuarios como a los canales. La razón
+   de ser de esta elección es que algún día los nicks serán obsoletos y
+   la propiedad equivalente será el canal.N. del T.:Realmente no sé qué
+   quieren decir aquí, ya que si uno no accede con un nick... ¿Cómo lo
+   hace?
+
+   Al analizar mensajes MODE, se recomienda analizar primero el mensaje
+   completo y pasar los cambios después.
+
+4.2.3.1 Modos de canal
+
+   Parámetros: <canal> {[+|-]|o|p|s|i|t|n|b|v} [<límite>] [<usuario>]
+               [<máscara de ban>]
+
+   El comando MODE se proporciona para que los operadores de canal
+   puedan cambiar las características de su canal. Se necesita también
+   que los servidores puedan cambiar los modos de canal para poderse
+   crear operadores de canal.
+
+   Los modos disponibles para canales son:
+
+           o - dar/quitar privilegios de operador de canal
+           p - modo de canal privado
+           s - canal secreto
+           i - canal sólo invitados
+           t - sólo los operadores de canal pueden cambiar el topic
+           n - no se permiten mensajes al canal desde clientes de fuera
+           m - canal moderado
+           l - establecer un límite de usuarios en el canal
+           b - poner una máscara de ban para mantener usuarios fuera
+           v - dar/quitar voz en un canal moderado
+           k - poner clave al canal
+
+
+
+
+Oikarinen & Reed                                              [Pág. 21]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Al usar las opciones 'o' y 'b', hay una restricción de un total de 3
+   por comando MODE. Esto quiere decir que cualquier combinación de 'o'
+   y 'b' no debe exceder de 3 en número de parámetros.
+
+4.2.3.2 Modos de usuario
+
+   Parámetros: <nick> {[+|-]|i|w|s|o}
+
+   Los modos de usuario son cambios que afectan a cómo ven los demás al
+   cliente o los mensajes "extra" que puede recibir. Un comando MODE
+   sólo se acepta si tanto el que lo envía como el nick dado como
+   parámetro coinciden.
+
+   Los modos disponibles son:
+
+           i - marca el usuario como invisible
+           s - marca al usuario para que reciba los mensajes del
+               servidor
+           w - el usuario recibe wallops (ver 5.6)
+           o - modo de Operador
+
+   Puede haber modos adicionales disponibles más adelante.
+
+   Si un usuario intenta hacerse operador usando la opción "+o", debe
+   ignorarse. En cambio, no hay restricción en que uno se "deopee" (con
+   "-o").
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              RPL_CHANNELMODEIS
+           ERR_CHANOPRIVSNEEDED            ERR_NOSUCHNICK
+           ERR_NOTONCHANNEL                ERR_KEYSET
+           RPL_BANLIST                     RPL_ENDOFBANLIST
+           ERR_UNKNOWNMODE                 ERR_NOSUCHCHANNEL
+
+           ERR_USERSDONTMATCH              RPL_UMODEIS
+           ERR_UMODEUNKNOWNFLAG
+
+   Ejemplos:
+
+           Uso de los modos de canal:
+
+MODE #Finnish +im               ; El canal #Finnish es ahora moderado y
+                                sólo para invitados
+
+MODE #Finnish +o Kilroy         ; Da privilegios de "chanop" a Kilroy
+                                en el canal #Finnish.
+
+MODE #Finnish +v Wiz            ; Permite hablar a  WiZ en #Finnish.
+
+MODE #Fins -s                   ; El canal #Fins deja de ser "secreto"
+
+
+Oikarinen & Reed                                              [Pág. 22]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+MODE #42 +k oulu                ; Poner como clave del canal "oulu"
+
+MODE #eu-opers +l 10            ; Poner un límite de 10 usuarios en el
+                                canal
+
+MODE &oulu +b                   ; Lista de máscaras de ban del canal
+
+MODE &oulu +b *!*@*             ; Prohibe la entrada a todos los
+                                usuarios
+
+MODE &oulu +b *!*@*.edu         ; Prohíbe la entrada a cualquier
+                                usuario con máscara de host *.edu
+
+        Uso de los modos de usuario:
+
+:MODE WiZ -w                    ; Desactiva la recepción de mensajes
+                                WALLOPS para WiZ
+
+:Angel MODE Angel +i            ; Mensaje de Angel para hacerse
+                                invisible
+
+MODE WiZ -o                     ; WiZ "deopeándose" (quitar estatus de
+                                operador. El inverso no debe permitirse
+                                a los usuarios ya que se saltaría el
+                                comando OPER.
+
+4.2.4 Mensaje de tópico
+
+      Comando: TOPIC
+   Parámetros: <canal> [<tópico>]
+
+   El mensaje TOPIC se usa para cambiar o ver el tópico de un canal. El
+   tópico para el canal <canal> se devuelve si no se especifica. Si el
+   parámetro <tópico> está presente, se cambiará el tópico, si los
+   modos del canal lo permiten.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_NOTONCHANNEL
+           RPL_NOTOPIC                     RPL_TOPIC
+           ERR_CHANOPRIVSNEEDED
+
+   Ejemplos:
+
+   :Wiz TOPIC #test :Nuevo tópico  ;El usuario WiZ pone un tópico
+
+   TOPIC #test :otro tópico        ;Pone el tópico "otro tópico" en
+                                   #test
+
+   TOPIC #test                     ;Mirar el tópico de #test
+
+
+Oikarinen & Reed                                              [Pág. 23]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4.2.5 Mensaje de nombres
+
+      Comando: NAMES
+   Parámetros: [<canal>{,<canal>}]
+
+   Con el comando NAMES, un usuario puede listar todos los nicks que
+   sean visibles en cualquier canal que puedan ver. Los nombres de
+   canal que pueden ver son los que no son privados (+p) o secretos
+   (+s), o aquellos en los que se encuentran. El parámetro <canal>
+   especifica el (los) canal(es) de los cuales hay que devolver la
+   información si es posible. No hay mensaje de error si el nombre del
+   canal es incorrecto.
+
+   Si no se especifica un parámetro <canal>, se da una lista de todos
+   los canales y sus ocupantes. Al final de la lista, aparecen los
+   usuarios que son visibles pero o bien no están en ningún canal o en
+   un canal visible, y se marcan como si estuviesen en el "canal" '*'.
+
+   Respuestas numéricas:
+
+           RPL_NAMREPLY                    RPL_ENDOFNAMES
+
+   Ejemplos:
+
+   NAMES #twilight_zone,#42        ;listar usuarios visibles en #42 y
+                                   #twilight_zone si puedes ver los
+                                   canales
+
+   NAMES                           ;listar todos los canales y usuarios
+                                   visibles
+
+4.2.6 Mensaje de lista de canales
+
+      Comando: LIST
+   Parámetros: [<canal>{,<canal>} [<servidor>]]
+
+   El mensaje LIST se usa para listar los canales y sus tópicos. Si se
+   da el parámetro <canal>, solo se visualiza el estatus de ese canal.
+   Los canales privados se listan (sin el tópico) como canal "Prv" a no
+   ser que el cliente que genere la petición se encuentre en el canal.
+   De la misma forma, los canales secretos no se listan a menos que el
+   cliente sea miembro del canal en cuestión.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                RPL_LISTSTART
+           RPL_LIST                        RPL_LISTEND
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 24]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Ejemplos:
+
+   LIST                            ;Listar todos los canales
+
+   LIST #twilight_zone,#42         ;Listar canales #twilight_zone y #42
+
+
+4.2.7 Mensaje de invitación a un canal
+
+      Comando: INVITE
+   Parámetros: <nick> <canal>
+
+   El mensaje INVITE se usa para invitar a otros usuarios a un canal.
+   El parámetro <nick> es el nick de la persona a invitar al canal
+   <canal>. No se requiere que el canal al que se invita al usuario
+   exista o sea un canal válido. Para invitar a alguien a un canal sólo
+   para invitados (+i), el cliente que envíe el mensaje INVITE debe ser
+   operador de canal en dicho canal.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_NOSUCHNICK
+           ERR_NOTONCHANNEL                ERR_USERONCHANNEL
+           ERR_CHANOPRIVSNEEDED
+           RPL_INVITING                    RPL_AWAY
+
+   Ejemplos:
+
+   :Angel INVITE Wiz #Dust         ;Angel invita a WiZ al canal #Dust
+
+   INVITE Wiz #Twilight_Zone       ;Comando para invitar a WiZ al canal
+                                   #Twilight_zone
+
+4.2.8 Comando de expulsión temporal
+
+      Comando: KICK
+   Parámetros: <canal> <usuario> [<comentario>]
+
+   El comando KICK se puede usar para eliminar a un usuario de la lista
+   de miembros de un canal. "Se le patea" del canal (PART forzado).
+
+   Sólo los operadores de canal pueden expulsar otro usuario de un
+   canal. Cada servidor que reciba un mensaje KICK comprueba que es
+   válido (esto es, el que lo envía es operador de canal) antes de
+   eliminar a la víctima del canal.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_NOSUCHCHANNEL
+           ERR_BADCHANMASK                 ERR_CHANOPRIVSNEEDED
+           ERR_NOTONCHANNEL
+
+
+Oikarinen & Reed                                              [Pág. 25]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Ejemplos:
+
+KICK &Melbourne Matthew         ; Expulsar a Matthew de &Melbourne
+
+KICK #Finnish John :Hablar en inglés
+                                ; Expulsar a John de #Finnish con el
+                                comentario "Hablar en inglés como
+                                motivo (comentario)
+
+:WiZ KICK #Finnish John         ; Mensaje KICK de WiZ para expulsar a
+                                John del canal #Finnish
+
+NOTA:
+     Se pueden extender los parámetros del comando KICK de la forma:
+
+<canal>{,<canal>} <usuario>{,<usuario>} [<comentario>]
+
+4.3 Peticiones y comandos del servidor
+
+   El grupo de de comandos de petición del servidor sirve para devolver
+   información de cualquier servidor conectado a la red. Todos los
+   servidores conectados deben responder correctamente a las peticiones.
+   Cualquier respuesta incorrecta (o ausencia de ella) debe
+   considerarse como un servidor caído y debe desconectarse o
+   deshabilitarse tan pronto como sea posible hasta que se solucione el
+   problema.
+
+   En estas peticiones, donde un parámetro aparece como "<servidor>",
+   normalmente significa que puede ser un nick, servidor o una máscara
+   de algún tipo. Para cada parámetro sólo se genera una petición y una
+   respuesta.
+
+4.3.1 Mensaje de versión
+
+      Comando: VERSION
+   Parámetros: [<servidor>]
+
+   El mensaje VERSION se usa para preguntar por la versión del programa
+   que soporta el servidor. El parámetro opcional <servidor> se usa
+   para obtener la versión de un servidor al cual no está conectado el
+   cliente directamente.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                RPL_VERSION
+
+   Ejemplos:
+
+   :Wiz VERSION *.se        ; mensaje de Wiz para comprobar la versión
+                            de un servidor que tenga de máscara *.se
+
+
+
+Oikarinen & Reed                                              [Pág. 26]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   VERSION tolsun.oulu.fi   ; comprobar la versión de "tolsun.oulu.fi".
+
+
+4.3.2 Mensaje de estadísticas
+
+      Comando: STATS
+   Parámetros: [<petición> [<servidor>]]
+
+   El mensaje STATS se usa para obtener las estadísticas de un servidor
+   en concreto. Si se omite el parámetro <servidor>, sólo se devuelve
+   el final de la respuesta de estadísticas. La implementación de este
+   comando depende en gran medida del servidor que responde, pero el
+   servidor debe poder proporcionar la información de la forma descrita
+   por las peticiones especificados abajo (o algo similar).
+
+   Una petición puede ser una sola letra que sólo la comprueba el
+   servidor destino (si se da el parámetro <servidor>, en otro caso se
+   pasa por servidores intermedios, sin alterar e ignorado. Los tipos
+   de petición que siguen son los que están implementados actualmente y
+   proporcionan una gran parte de la información sobre la configuración
+   del servidor. Aunque puede no ser soportado de la misma forma por
+   todas las versiones, todos los servidores deberían dar una respuesta
+   válida a una petición de STATS.
+
+   Los tipos de petición soportados son:
+
+           c - devuelve una lista de los servidores a los que el
+               servidor puede conectar o desde los que permite
+               conexiones.
+           h - devuelve una lista de servidores que se tratan como
+               hojas y los que se tratan como concentradores (hubs).
+           i - devuelve una lista de hosts desde los que el servidor
+               permite a un cliente conectar.
+           k - devuelve una lista de combinaciones nombre de usuario/
+               nombre de host baneados del servidor.
+           l - devuelve una lista de las conexiones del servidor,
+               mostrando la duración de cada conexión establecida y el
+               tráfico sobre esa conexión en bytes y mensajes en cada
+               dirección.
+           m - devuelve la lista de comandos soportada por el servidor
+               y el contador de uso si no es cero.
+           o - devuelve la lista de hosts desde los cuales los clientes
+               normales pueden ser Operadores (O-lines).
+           y - mostrar las líneas Y (Clase) del archivo de
+               configuración del servidor.
+           u - devuelve una cadena mostrando cuánto tiempo lleva el
+               servidor activo.
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 27]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+           RPL_STATSCLINE                  RPL_STATSNLINE
+           RPL_STATSILINE                  RPL_STATSKLINE
+           RPL_STATSQLINE                  RPL_STATSLLINE
+           RPL_STATSLINKINFO               RPL_STATSUPTIME
+           RPL_STATSCOMMANDS               RPL_STATSOLINE
+           RPL_STATSHLINE                  RPL_ENDOFSTATS
+
+   Ejemplos:
+
+STATS m               ; chequear los comandos del servidor
+
+:Wiz STATS c eff.org  ; petición de WiZ de información sobre las líneas
+                      C/N del servidor eff.org
+
+4.3.3 Mensaje de enlaces de servidores
+
+      Comando: LINKS
+   Parámetros: [[<servidor remoto>]<máscara de servidor>]
+
+   Con el mensaje LINKS, un usuario puede listar los servidores que
+   conoce el servidor que responda a la petición. La lista debe cumplir
+   la máscara, pero si no se proporciona dicha máscara, se devuelve la
+   lista completa.
+
+   Si se da el parámetro <servidor remoto> además de <máscara de
+   servidor>, el comando LINKS se envía al primer servidor que tenga
+   ese nombre (si lo hay), y ese servidor es el que responde a la
+   petición.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+           RPL_LINKS                       RPL_ENDOFLINKS
+
+   Ejemplos:
+
+LINKS *.au                      ; lista los servidores cuyo nombre
+                                contenga *.au
+
+:WiZ LINKS *.bu.edu *.edu       ; Mensaje LINKS de WiZ al primer
+                                servidor *.edu para obtener la lista de
+                                servidores *.bu.edu
+
+ N. del T.: el comentario del ejemplo no coincide con lo que dice en la
+            descripción del comando, desconozco la sintaxis correcta.
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 28]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+4.3.4 Mensaje de hora local del servidor
+
+      Comando: TIME
+   Parámetros: [<servidor>]
+
+   El mensaje de hora se usa para obtener la hora local del servidor
+   especificado. Si no se da el parámetro <servidor>, responderá el
+   servidor que recoja el comando.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                RPL_TIME
+
+   Ejemplos:
+
+   TIME tolsun.oulu.fi     ; Preguntar por la hora en "tolson.oulu.fi"
+
+   Angel TIME *.au         ; Angel pregunta la hora en un servidor de
+                           "*.au"
+
+4.3.5 Mensaje de conexión servidor-servidor
+
+      Comando: CONNECT
+   Parámetros: <servidor objetivo> [<puerto> [<servidor remoto>]]
+
+   El comando CONNECT se usa para obligar a un servidor a intentar
+   establecer una conexión con otro servidor. Este es un comando
+   privilegiado y sólo está disponible para Operadores de IRC. Si se da
+   el parámetro <servidor remoto>, la conexión la realiza ese servidor
+   al <servidor objetivo> en el <puerto> especificado.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                ERR_NOPRIVILEGES
+           ERR_NEEDMOREPARAMS
+
+   Ejemplos:
+
+CONNECT tols.oulu.fi  ;Intento de conectar un servidor a tols.oulu.fi
+
+:WiZ CONNECT eff.org 6667 csd.bu.edu
+                      ; Intento de CONNECT de WiZ para conectar los
+                      servidores eff.org y csd.bu.edu en el puerto 6667
+
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 29]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+4.3.6 Mensaje de trazado de ruta
+
+      Comando: TRACE
+   Parámetros: [<servidor>]
+
+   El comando TRACE se usa para encontrar la ruta a un servidor
+   específico. Cada servidor que procese este mensaje debe decírselo al
+   que lo envía con una respuesta que indique que es un enlace,
+   formando una cadena de respuestas similar a la que se obtiene al
+   usar "traceroute". Tras enviar la respuesta, debe enviar el mensaje
+   TRACE al siguiente servidor hasta que se llegue al servidor
+   especificado. Si se omite el parámetro <servidor>, se recomienda que
+   el comando TRACE envíe un mensaje al que solicita el trazado
+   diciendo los servidores a los que el servidor actual tiene conexión
+   directa.
+
+   Si el destino especificado por <servidor> es un servidor, el
+   servidor de destino debe informar a todos los servidores y usuarios
+   que están conectados a él, aunque sólo los Operadores pueden ver los
+   usuarios. Si <servidor> es un nick, sólo se dará la respuesta para
+   ese nick.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+
+   Si el mensaje TRACE va destinado a otro servidor, todos los
+   servidores intermedios deben devolver una respuesta RPL_TRACELINK
+   para indicar que el mensaje pasó por él y donde fue a continuación.
+
+           RPL_TRACELINK
+
+   Una respuesta a TRACE puede estar compuesta por un número cualquiera
+   de las siguientes respuestas numéricas:
+
+           RPL_TRACECONNECTING             RPL_TRACEHANDSHAKE
+           RPL_TRACEUNKNOWN                RPL_TRACEOPERATOR
+           RPL_TRACEUSER                   RPL_TRACESERVER
+           RPL_TRACESERVICE                RPL_TRACENEWTYPE
+           RPL_TRACECLASS
+
+   Ejemplos:
+
+TRACE *.oulu.fi                 ; TRACE al servidor *.oulu.fi
+
+:WiZ TRACE AngelDust            ; TRACE de WiZ al nick AngelDust
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 30]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4.3.7 Mensaje de nombre de administrador del servidor
+
+      Comando: ADMIN
+   Parámetros: [<servidor>]
+
+   El mensaje ADMIN se usa para obtener el nombre del administrador del
+   servidor dado, o del servidor al que se está conectado si se omite
+   el parámetro <servidor>. Cada servidor debe ser capaz de reenviar
+   los mensajes de ADMIN a otros servidores.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+           RPL_ADMINME                     RPL_ADMINLOC1
+           RPL_ADMINLOC2                   RPL_ADMINEMAIL
+
+   Ejemplos:
+
+   ADMIN tolsun.oulu.fi    ;pedir una respuesta ADMIN de tolsun.oulu.fi
+
+   :WiZ ADMIN *.edu        ;petición de ADMIN desde WiZ al primer
+                           servidor *.edu.
+
+4.3.8 Mensaje de información sobre el servidor
+
+      Comando: INFO
+   Parámetros: [<servidor>]
+
+   El comando INFO se necesita para obtener información que describa el
+   servidor: su versión, cuándo se compiló, los parches aplicados,
+   cuándo se inició y otra información que pueda ser relevante.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+           RPL_INFO                        RPL_ENDOFINFO
+
+   Ejemplos:
+
+   INFO csd.bu.edu       ;petición de INFO de csd.bu.edu
+
+   :Avalon INFO *.fi     ;petición de INFO de Avalon sobre el primer
+                         servidor *.fi.
+
+   INFO Angel            ;pedir INFO del servidor al que Angel está
+                         conectado
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 31]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4.4 Enviando mensajes
+
+   El propósito principal del protocolo IRC es el de facilitar una base
+   de comunicación entre clientes. PRIVMSG y NOTICE son los únicos
+   comandos disponibles que envían mensajes de texto de un cliente a
+   otro - el resto simplemente lo hace posible e intenta asegurar que
+   ocurre de una forma fiable y estructurada.
+
+4.4.1 Mensajes privados
+
+      Comando: PRIVMSG
+   Parámetros: <receptor>{,<receptor>} <texto>
+
+   PRIVMSG se usa para enviar mensajes privados entre usuarios.
+   <receptor> es el nick del que debe recibir el mensaje. Puede ser
+   también una lista de nicks o canales separados por comas.
+
+   El parámetro <receptor> también puede ser una máscara de host
+   (#mask) o de servidor ($mask). En ambos casos el servidor sólo
+   enviará los PRIVMSG a los que tengan un servidor o host que coincida
+   con la máscara. La máscara debe contener al menos un "." y ningún
+   comodín tras el último ".". Este requisito existe para evitar que se
+   envíen mensajes a "#*" o "$*", que lo mandaría a todos los usuarios;
+   la experiencia dice que se abusa de esto más que se usa de forma
+   responsable y apropiada. Los comodines son los caracteres "*" y "?".
+   Esta extensión del comando PRIVMSG sólo está disponible para los
+   Operadores de IRC.
+
+   Respuesas numéricas:
+
+           ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
+           ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
+           ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
+           ERR_NOSUCHNICK
+           RPL_AWAY
+
+   Ejemplos:
+
+:Angel PRIVMSG Wiz :Hola ¿recibes esto?
+                                ; Mensaje de Angel a Wiz.
+
+PRIVMSG Angel :Sí que lo recibo :) ;Mensaje para Angel.
+
+PRIVMSG jto@tolsun.oulu.fi :Hola
+                             ; Mensaje a un cliente en el servidor
+                             tolsun.oulu.fi con nombre de usuario "jto"
+
+PRIVMSG $*.fi :Servidor tolsun.oulu.fi reiniciando
+                                ; Mensaje a todos los conectados a un
+                                servidor de máscara *.fi
+
+
+
+Oikarinen & Reed                                              [Pág. 32]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+
+PRIVMSG #*.edu :NSFNet está trabajando, se esperan interrupciones
+                                ; Mensaje a todos los usuarios que
+                                tengan máscara de host *.edu
+
+4.4.2. Mensajes de aviso
+
+      Comando: NOTICE
+   Parámetros: <nick> <texto>
+
+   El comando NOTICE se usa de forma similar a PRIVMSG. La diferencia
+   entre ambos es que no se pueden enviar respuestas automáticas a un
+   NOTICE. Esta regla se aplica también a los servidores (no pueden
+   enviar mensajes de error en respuesta a un NOTICE). El propósito de
+   esta regla es el de evitar bucles entre clientes que envían una
+   respuesta automática a algo que reciben. Esto es típico de los
+   autómatas (clientes con IA u otro programa interactivo que controla
+   sus acciones) que siempre tienden a responder de forma que acaban en
+   un buble con otro autómata.
+
+   Ver PRIVMSG para más detalles sobre respuestas y ejemplos.
+
+4.5 Peticiones de usuario
+
+   Las peticiones de usuario son un grupoo de comandos relacionados con
+   la búsqueda de detalles sobre un usuario o grupo de usuarios en
+   concreto. Cuando se usen comodines, si alguno coincide, sólo se
+   devolverá la información sobre los usuarios que son "visibles" al
+   que la solicita. La visibilidad de un usuario viene determinada por
+   la combinación de los modos del usuario y la configuración de los
+   canales en los que se encuentren ambos.
+
+4.5.1 Petición de "WHO"
+
+      Comando: WHO
+   Parámetros: [<nombre> [<o>]]
+
+   El mensaje WHO lo usa un cliente para generar una petición que
+   devuelva una lista de información que cumpla el parámetro <nombre>
+   dado por el cliente. En ausencia del parámetro <nombre>, todos los
+   usuarios visibles son listados. Se obtiene el mismo resultado al
+   usar como <nombre> "0" o cualquier comodín que cumpla cualquier
+   posible entrada.
+
+   El <nombre> que se pasa a WHO se compara con hosts de usuarios,
+   servidores, nombres reales y nicks si el canal <nombre> no se
+   encuentra.
+
+   Si se pasa el parámetro <o>, sólo se devuelven los Operadores cuya
+   máscara coincida con la suministrada en <nombre>.
+
+
+Oikarinen & Reed                                              [Pág. 33]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER
+           RPL_WHOREPLY                    RPL_ENDOFWHO
+
+   Ejemplos:
+
+   WHO *.fi                   ; Lista los usuarios con máscara "*.fi"
+
+   WHO jto* o                 ; Lista los Operadores con máscara "jto*"
+
+4.5.2 Petición de "WHOIS"
+
+      Comando: WHOIS
+   Parámetros: [<servidor>] <máscara de nick>[,<máscara de nick>[,...]]
+
+   Este comando se usa para pedir información sobre un usuario en
+   particular. El servidor responderá al mensaje con varias respuestas
+   numéricas indicando diversos estados de cada usuario que cumpla con
+   la máscara de nick (si se es capaz de verlos). Si no hay comodines
+   en <máscara de nick>, se presentará cualquier información sobre ese
+   nick que sea capaz de ver. Se puede usar una lista de nick separados
+   por comas.
+
+   La última versión envía la petición a un servidor especifico. Esto
+   es útil cuando se quiere saber cuánto tiempo lleva inactivo el
+   usuario, ya que sólo el servidor al que el usuario está conectado
+   directamente conoce esta información, mientras que el resto se
+   conoce de forma global.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                ERR_NONICKNAMEGIVEN
+           RPL_WHOISUSER                   RPL_WHOISCHANNELS
+           RPL_WHOISCHANNELS               RPL_WHOISSERVER
+           RPL_AWAY                        RPL_WHOISOPERATOR
+           RPL_WHOISIDLE                   ERR_NOSUCHNICK
+           RPL_ENDOFWHOIS
+
+   Ejemplos:
+
+   WHOIS wiz             ;devuelve la información disponible sobre WiZ
+
+   WHOIS eff.org trillian ;pide al servidor eff.org información sobre
+                          trillian
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 34]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+4.5.3 Petición de "WHOWAS"
+
+      Comando: WHOWAS
+   Parámetros: <nick> [<contador> [<servidor>]]
+
+   WHOWAS pide información sobre un nick que ya no existe. Esto puede
+   ser bien por un cambio de nick o porque el usuario sale del IRC.
+   Como respuesta, el servidor busca en su historial de nicks un nick
+   que coincida con el dado (nada de comodines). La búsqueda es en
+   orden ascendente, devolviendo la entrada más reciente. Si hay más de
+   una entrada, se devolverán como mucho <contador> respuestas (o todas
+   si no hay <contador>). Si se da un número negativo a <contador>, se
+   realiza una búsqueda completa.
+
+   Respuesas numéricas:
+
+           ERR_NONICKNAMEGIVEN             ERR_WASNOSUCHNICK
+           RPL_WHOWASUSER                  RPL_WHOISSERVER
+           RPL_ENDOFWHOWAS
+
+   Ejemplos:
+
+   WHOWAS Wiz                ;devuelve toda la información en el
+                             historial de nicks sobre "WiZ"
+
+   WHOWAS Mermaid 9          ;devuelve como mucho las 9 entradas más
+                             recientes del nick "Mermaid"
+
+   WHOWAS Trillian 1 *.edu   ;devuelve la entrada más reciente del nick
+                             "Trillian" en el primer servidor que tenga
+                             de máscara "*.edu".
+
+4.6 Otros mensajes
+
+   Los mensajes de esta categoría no entran en ninguna de las otras,
+   pero de todas formas son parte y requisito del protocolo.
+
+4.6.1 Mensaje de "KILL"
+
+      Comando: KILL
+   Parámetros: <nick> <comentario>
+
+   El comando KILL se usa para cerrar una conexión cliente-servidor,
+   mediante el servidor que sostiene la conexión.Lo usan los servidores
+   cuando encuentran una entrada duplicada en la lista de nicks válidos
+   y sirve para eliminar ambas entradas. También está disponible a los
+   Operadores de IRC.
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 35]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Este comando es inútil contra los clientes que tienen algoritmos de
+   reconexión automática ya que la desconexión es breve. Sin embargo,
+   se rompe el flujo de datos y puede usarse para parar "inundaciones"
+   de flujo de datos. Cualquier usuario puede elegir recibir los
+   mensajes de KILL que se generen para otros usuarios.
+
+   En una "arena", donde los nicks deben ser globalmente únicos todo el
+   tiempo, los mensajes de KILL se envían cuando se detectan
+   "duplicados" (intento de registrar dos usuarios con el mismo nick),
+   esperando que ambos desaparecerán y sólo uno reaparecerá.
+
+   El comentario debe reflejar el motivo del KILL. Para KILLs generados
+   por servidor normalmente se rellena con detalles relativos a los
+   orígenes de los dos nicks conflictivos. Para los usuarios se les
+   deja proveer una razón adecuada que satisfaga a los usuarios que lo
+   vean. Para prevenir KILLs falsos que oculten la identidad del
+   KILLeador, el comentario muestra también un "camino de kill",
+   rellenado por el servidor por el que pasa, cada uno añadiendo su
+   nombre al "camino".
+
+   Respuestas numéricas:
+
+           ERR_NOPRIVILEGES                ERR_NEEDMOREPARAMS
+           ERR_NOSUCHNICK                  ERR_CANTKILLSERVER
+
+
+   KILL David (csd.bu.edu <- tolsun.oulu.fi)
+                   ;Colisión de nicks entre csd.bu.edu y tolson.oulu.fi
+
+
+   NOTA:
+   Se recomienda que solo los Operadores puedan KILLear otros usuarios
+   con el comando KILL. En un mundo ideal ni siquiera los Operadores
+   necesitan hacerlo y se deja este trabajo a los servidores.
+
+
+4.6.2 Mensaje de "PING"
+
+      Comando: PING
+   Parámetros: <servidor1> [<servidor2>]
+
+   El mensaje de PING se usa para comprobar la presencia de un cliente
+   activo al otro lado de la conexión. El servidor envía un mensaje de
+   PING a intervalos regulares si no se detecta actividad de una
+   conexión. Si una conexión no responde a un comando PING dentro de un
+   espacio de tiempo, se cierra la conexión.
+
+   Cualquier cliente que reciba un PING debe responder al <servidor1>
+   (servidor que envía el mensaje PING) tan pronto como le sea posible
+   con el mensaje PONG apropiado para indicar que está activo. Los
+   servidores no deben responder a PINGs pero se apoyan en los que
+
+
+Oikarinen & Reed                                              [Pág. 36]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   vienen del otro lado de la conexión para comprobar que la conexión
+   está viva. Si se especifica <servidor2>, el mensaje de ping se
+   reenvía allí.
+
+   Respuestas numéricas:
+
+           ERR_NOORIGIN                    ERR_NOSUCHSERVER
+
+   Ejemplos:
+
+   PING tolsun.oulu.fi     ;servidor enviando un mensaje PING a otro
+                           para indicar que sigue vivo.
+
+   PING WiZ                ;mensaje PING enviado al nick WiZ
+
+4.6.3 Mensaje de "PONG"
+
+      Comando: PONG
+   Parámetros: <demonio> [<demonio2>]
+
+   El mensaje de PONG es la respuesta al mensaje de PING. Si se pasa el
+   parámetro <demonio2>, el mensaje debe reenviarse al demonio
+   especificado. El parámetro <demonio> es el nombre del demonio que
+   responde al mensaje de PING y que genera este mensaje.
+
+   Respuestas numéricas:
+
+           ERR_NOORIGIN                    ERR_NOSUCHSERVER
+
+   Ejemplos:
+
+   PONG csd.bu.edu tolsun.oulu.fi  ;mensaje PONG desde csd.bu.edu a
+                                   tolson.oulu.fi
+
+
+4.6.4 Error
+
+      Comando: ERROR
+   Parámetros: <mensaje de error>
+
+   El comando ERROR lo usan los servidores para informar sobre errores
+   serios o fatales a sus Operadores. Puede enviarse también de un
+   servidor a otro, pero no debe aceptarse desde ningún cliente normal
+   que sea desconocido.
+
+   Un mensaje de ERROR informa únicamente de errores que ocurren en un
+   enlace servidor-servidor. Se envía al servidor del otro lado (que lo
+   envía a todos sus Operadores conectados) y a todos los Operadores
+   conectados. No debe enviarlo un servidor a otros servidores, si se
+   recibe de un servidor.
+
+
+
+Oikarinen & Reed                                              [Pág. 37]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Cuando un servidor envía un mensaje de ERROR que recibe a sus
+   Operadores, el mensaje debería incluirse en un mensaje de NOTICE,
+   indicando que el que el cliente no fue responsable del error.
+
+   Respuestas numéricas:
+
+           Ninguna
+
+   Ejemplos:
+
+   ERROR :El servidor *.fi ya existe  ;mensaje de ERROR al servidor que
+                                      causó el error
+
+   NOTICE WiZ :ERROR desde csd.bu.edu -- El servidor *.fi ya existe
+                                 ;Mismo mensaje que antes pero enviado
+                                 al usuario WiZ en el otro servidor
+
+5. MENSAJES OPCIONALES
+
+   Esta sección describe mensajes OPCIONALES. No son requerimiento en
+   una implementación del protocolo descrito aquí para un servidor. En
+   ausencia de esta opción, debe generarse un mensaje de error o un
+   error de comando desconocido. Si el mensaje va destinado a otro
+   servidor, debe pasarse (se requiere análisis de elementos). Las
+   respuestas numéricas se listan en las secciones posteriores.
+
+5.1 Mensaje de ausencia (AWAY)
+
+      Comando: AWAY
+   Parámetros: [mensaje]
+
+   Con el mensaje de AWAY, el cliente pueden establecer una cadena de
+   respuesta para cualquier comando PRIVMSG que se dirija a él (no a un
+   canal en el que se encuentren). La respuesta automática la envía el
+   servidor al cliente que envía el PRIVMSG. El servidor que responde
+   es aquel al que está conectado el cliente que lo envía.
+
+   El mensaje de AWAY se usa bien con un parámetro (para establecer un
+   mensaje de ausencia) o sin parámetros (para quitar el mensaje de
+   ausencia).
+
+   Respuestas numéricas:
+
+           RPL_UNAWAY                      RPL_NOWAWAY
+
+   Ejemplos:
+
+   AWAY :Vuelvo en 5 min ;Pone el mensaje de ausencia "Vuelvo en 5 min"
+
+   :WiZ AWAY             ;quita el mensaje de ausencia de WiZ
+
+
+
+Oikarinen & Reed                                              [Pág. 38]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+5.2 Comando de reconfiguración del servidor
+
+      Comando: REHASH
+   Parámetros: Ninguno
+
+   El mensaje de REHASH lo puede usar un Operador para obligar al
+   servidor a que relea y procese su archivo de configuración.
+
+   Respuestas numéricas:
+
+        RPL_REHASHING                   ERR_NOPRIVILEGES
+
+Ejemplos:
+
+REHASH            ;mensaje de un cliente con estatus de operador para
+                  que el servidor relea su archivo de configuración
+
+5.3 Comando de reinicio del servidor
+
+      Comando: RESTART
+   Parámetros: Ninguno
+
+   El mensaje de RESTART sólo lo puede usar un Operador para obligar a
+   un servidor a que reinicie. Este comando es opcional, ya que puede
+   verse como un riesgo el permitir que la gente conecte al servidor
+   como Operador y ejecute el comando, provocando (como poco) una
+   interrupción del servicio.
+
+   El comando de RESTART debe ser procesado siempre por el servidor al
+   que el cliente que lo envía está conectado y no pasado a otros
+   servidores.
+
+   Respuestas numéricas:
+
+           ERR_NOPRIVILEGES
+
+   Ejemplos:
+
+   RESTART                         ;no se requieren parámetros
+
+5.4 Mensaje de invocación (SUMMON)
+
+      Comando: SUMMON
+   Parámetros: <usuario> [<servidor>]
+
+   El comando SUMMON puede usarse para enviar un mensaje a los usuarios
+   conectados a un host que tenga un servidor de IRC para que se unan
+   al IRC. Este mensaje sólo se envía si: (a) el servidor objetivo
+   tiene activada la invocación, (b) el usuario está conectado, y (c)
+   el servidor puede escribir a la consola (o similar) del usuario.
+
+
+Oikarinen & Reed                                              [Pág. 39]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   Si no se da un parámetro <servidor>, se intenta invocar al <usuario>
+   desde el servidor al que está conectado el cliente.
+
+   Si no está activada la invocación en un servidor, debe devolver la
+   respuesta ERR_SUMMONDISABLED y pasar el mensaje de invocación en
+   adelante.
+
+   Respuestas numéricas:
+
+           ERR_NORECIPIENT                 ERR_FILEERROR
+           ERR_NOLOGIN                     ERR_NOSUCHSERVER
+           RPL_SUMMONING
+
+   Ejemplos:
+
+   SUMMON jto                 ;invocar al usuario jto en el host del
+                              servidor IRC
+
+   SUMMON jto tolsun.oulu.fi  ;invocar al usuario jto en el host que
+                              tiene un servidor IRC llamado
+                              "tolsun.oulu.fi"
+
+
+5.5 Mensaje de lista de usuarios
+
+      Comando: USERS
+   Parámetros: [<servidor>]
+
+   El comando USERS devuelve una lista de los usuarios conectados al
+   servidor de forma similar a who(1), rusers(1) y finger(1). Puede
+   deshabilitarse este comando por razones de seguridad. Si se hace,
+   debe devolverse la respuesta numérica adecuada para indicarlo.
+
+   Respuestas numéricas:
+
+           ERR_NOSUCHSERVER                ERR_FILEERROR
+           RPL_USERSSTART                  RPL_USERS
+           RPL_NOUSERS                     RPL_ENDOFUSERS
+           ERR_USERSDISABLED
+
+   Respuesta de comando deshabilitado:
+
+           ERR_USERSDISABLED
+
+   Ejemplos:
+
+USERS eff.org              ;petición de la lista de usuarios conectados
+                           al servidor eff.org
+
+:John USERS tolsun.oulu.fi    ;petición de John de la lista de usuarios
+                              del servidor tolsun.oulu.fi
+
+
+Oikarinen & Reed                                              [Pág. 40]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+5.6 Comando de mensaje a los Operadores
+
+      Comando: WALLOPS
+   Parámetros: Mensaje para todos los Operadores conectados
+
+   Envía un mensaje a todos los Operadores de IRC conectados. Tras la
+   implementación de WALLOPS como un comando de usuario, se vió que se
+   usaba para enviar mensaje a mucha gente (de forma parecida a WALL).
+   Debido a esto, se recomienda que la implementación de WALLOPS se use
+   como ejemplo permitiendo y reconociendo únicamente a los servidores
+   la capacidad de enviar WALLOPS.
+
+   Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS
+
+   Ejemplos:
+
+   :csd.bu.edu WALLOPS :Conexión '*.uiuc.edu 6667' de Joshua
+                              ; WALLOPS de csd.bu.edu anunciando un
+                              mensaje de conexión que recibió de Joshua
+
+5.7 Comando USERHOST
+
+      Comando: USERHOST
+   Parámetros: <nick>{<espacio><nick>}
+
+   El comando USERHOST toma una lista de hasta 5 nicks, separados por
+   espacios y devuelve una lista con información sobre cada uno. La
+   lista tiene cada respuesta separada por un espacio.
+
+   Respuestas numéricas:
+
+           RPL_USERHOST                    ERR_NEEDMOREPARAMS
+
+   Ejemplos:
+
+   USERHOST Wiz Michael Marty p   ;petición de USERHOST sobre los nicks
+                                  "Wiz", "Michael", "Marty" y "p"
+
+5.8 Comando ISON
+
+      Comando: ISON
+   Parámetros: <nick>{<espacio><nick>}
+
+   El comando ISON se implementó para proporcionar una forma rápida y
+   eficiente de obtener una respuesta sobre si un nick dado estaba en
+   el IRC. Sólo toma como parámetro una lista de nicks separados por
+   espacios. El servidor añade cada nick a su cadena de respuesta. Por
+   tanto, la cadena de respuesta puede ser vacía (ninguno de los nicks
+   se encuentra en el IRC), una copia exacta de la cadena de parámetros
+
+
+Oikarinen & Reed                                              [Pág. 41]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   (todos se encuentran) o un subconjunto del conjunto de nicks
+   proporcionados. La única restricción en el número de nicks que
+   pueden comprobarse es la que viene dada por la longitud combinada,
+   que no debe exceder de 512 caracteres.
+
+   ISON sólo debe procesarlo el servidor al que está conectado el
+   cliente que envía el comando y por tanto no debe pasarse a los demás
+   servidores.
+
+   Respuestas numéricas:
+
+           RPL_ISON                ERR_NEEDMOREPARAMS
+
+   Ejemplos:
+
+   ISON phone trillian WiZ jarlek Avalon Angel Monstah
+                                   ;ejemplo de petición ISON de 7 nicks
+
+
+6. RESPUESTAS
+
+   A continuación hay una lista de respuestas numéricas generadas en
+   contestación a los comandos dados arriba. Cada respuesta se da con
+   su número, nombre y cadena de respuesta.
+
+6.1 Respuestas de error
+
+        401     ERR_NOSUCHNICK
+                       "<nick> :No existe el nick/canal"
+
+                - Se usa para indicar que el parámetro <nick>
+                  proporcionado a un comando no se ecuentra
+
+        402     ERR_NOSUCHSERVER
+                       "<nombre de servidor> :No existe el servidor"
+
+                - Indica que el servidor cuyo nombre se proporciona no
+                  existe
+
+        403     ERR_NOSUCHCHANNEL
+                       "<nombre de canal> :No existe el canal"
+
+                - Indica que el nombre de canal no es válido
+
+        404     ERR_CANNOTSENDTOCHAN
+                       "<nombre de canal> :No se puede enviar al canal"
+                - Se envía a un usuario que (a) no está en un canal que
+                tiene el modo +n o (b) no es un operador de canal (o
+                tiene el modo +v) en un canal +m
+
+
+
+
+Oikarinen & Reed                                              [Pág. 42]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+        405     ERR_TOOMANYCHANNELS
+                       "<nombre de canal> :Has entrado en demasiados \
+                        canales"
+                - Se envía a un usuario que ha alcanzado el número
+                  máximo de canales en los que se permite estar e
+                  intenta entrar en otro
+
+        406     ERR_WASNOSUCHNICK
+                       "<nick> :No se encuentra el nick"
+
+                - Devuelto por WHOWAS para indicar que no existe
+                  información en el registro del nick
+
+        407     ERR_TOOMANYTARGETS
+                       "<target> :Receptores duplicados. No se ha \
+                         enviado el mensaje"
+
+                - Devuelto a un cliente que intenta enviar un mensaje
+                  usando el formato de destino usuario@host cuando el
+                  objetivo tiene varios destinos
+
+        409     ERR_NOORIGIN
+                        ":No se ha especificado el origen"
+
+                - Mensaje de PING o PONG al que no se ha indicado el
+                  origen que se requiere ya que estos comandos deben
+                  trabajar sin prefijos válidos
+
+        411     ERR_NORECIPIENT
+                        ":No se ha dado receptor (<comando>)"
+        412     ERR_NOTEXTTOSEND
+                        ":No hay texto que enviar"
+        413     ERR_NOTOPLEVEL
+                        "<máscara> :No se ha especificado el dominio \
+                                    superior"
+        414     ERR_WILDTOPLEVEL
+                        "<máscara> :Comodín en dominio superior"
+
+                - 412 - 414 los devuelve PRIVMSG para indicar que un
+                  mensaje no se envió por alguna razón. ERR_NOTOPLEVEL
+                  y ERR_WILDTOPLEVEL se devuelven al intentar un uso
+                  incorrecto de "PRIVMSG $<servidor>" o "PRIVMSG #<host>"
+
+        421     ERR_UNKNOWNCOMMAND
+                        "<comando> :Comando desconocido"
+
+                - Se devuelve a un cliente registrado para indicar que
+                  el servidor desconoce el comando
+
+
+
+
+Oikarinen & Reed                                              [Pág. 43]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+        422     ERR_NOMOTD
+                        ":Falta el archivo MOTD"
+
+                - El servidor no pudo abrir el archivo MOTD (Message Of
+                  The Day, Mensaje del día)
+
+        423     ERR_NOADMININFO
+                        "<servidor> :No hay infomación del administrador"
+
+                - Respuesta del servidor al comando ADMIN cuando hay un
+                  error al encontrar la información
+
+        424     ERR_FILEERROR
+                ":Error de fichero <operación de fichero> en <fichero>"
+                - Mensaje de error genérico para informar de una
+                  operación de archivo fallida en el procesamiento de
+                  un mensaje
+
+        431     ERR_NONICKNAMEGIVEN
+                        ":No se ha dado ningún nick"
+
+                - Devuelto cuando no se encuentra el parámetro <nick>
+                  supuesto para un comando
+
+        432     ERR_ERRONEUSNICKNAME
+                        "<nick> :Nick incorrecto"
+
+                - Devuelto cuando un mensaje NICK contiene caracteres
+                  que no están incluidos en el conjunto de definición.
+                  Ver sección x.x.x para más detalles sobre nicks
+                  válidos.
+
+        433     ERR_NICKNAMEINUSE
+                        "<nick> :El nick ya está en uso"
+
+                - Devuelto cuando un comando NICK pretende cambiar a un
+                  nick ya existente
+
+        436     ERR_NICKCOLLISION
+                        "<nick> :KILL por colisión de nicks"
+
+                - Devuelto por el servidor a un cliente cuando detecta
+                  una colisión de nicks (de un NICK registrado que ya
+                  existe en otro servidor)
+
+        441     ERR_USERNOTINCHANNEL
+                        "<nick> <canal> :No están en el canal"
+
+                - Indica que el objetivo del comando no está en el
+                  canal dado
+
+
+Oikarinen & Reed                                              [Pág. 44]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+        442     ERR_NOTONCHANNEL
+                        "<canal> :No estás en ese canal"
+
+                - Lo devuelve el servidor cuando un cliente intenta
+                  ejecutar un comando de canal en el que no es miembro
+
+        443     ERR_USERONCHANNEL
+                        "<usuario> <canal> :ya está en el canal"
+
+                - Devuelto cuando un cliente intenta invitar a un
+                  usuario a un canal en el que ya se encuentra
+
+
+        463     ERR_NOPERMFORHOST
+                        ":¡Su host no está entre los privilegiados!"
+
+                - Devuelto cuando un cliente intenta registrarse en un
+                  servidor que no admite conexiones desde el host del
+                  cliente
+
+        444     ERR_NOLOGIN
+                        "<usuario> :Usuario no conectado"
+
+                - Devuelto por el invocador después de un comando
+                  SUMMON para un usuario que no está conectado
+
+        445     ERR_SUMMONDISABLED
+                        ":SUMMON está desactivado"
+
+                - Respuesta al comando SUMMON de un servidor que lo
+                  tiene desactivado
+
+        446     ERR_USERSDISABLED
+                        ":USERS deshabilitado"
+
+                - Respuesta al comando USERS de un servidor que no lo
+                  implementa
+
+        451     ERR_NOTREGISTERED
+                        ":No se ha registrado"
+
+                - Indicación del servidor de que el cliente debe
+                  registrarse antes de que se le permita enviar
+                  comandos
+
+        461     ERR_NEEDMOREPARAMS
+                        "<comando> :No hay parámetros suficientes"
+
+                - Devuelto por muchos comandos para indicar que el
+                  cliente no proporcionó suficientes parámetros
+
+
+
+Oikarinen & Reed                                              [Pág. 45]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+        462     ERR_ALREADYREGISTRED
+                        ":No puede volver a registrarse"
+
+                - Devuelto por el servidor a un enlace que intenta
+                  cambiar parte de los detalles de registro (como la
+                  clave o detalles de usuario de un segundo mensaje
+                  USER)
+
+        464     ERR_PASSWDMISMATCH
+                        ":Clave incorrecta"
+
+                - Indica un intento fallido de registrar una conexión
+                  para la que se necesita clave y no se proporcionó o
+                  es incorrecta
+
+        465     ERR_YOUREBANNEDCREEP
+                        ":Usted está baneado de este servidor"
+
+                - Devuelto tras un intento de conectar y registrarse
+                  en un servidor configurado para denegar conexiones de
+                  usted
+
+        467     ERR_KEYSET
+                        "<canal> :La clave de canal ya está puesta"
+        471     ERR_CHANNELISFULL
+                        "<canal> :No se puede unir al canal (+l)"
+        472     ERR_UNKNOWNMODE
+                        "<carácter>:el modo es desconocido al servidor"
+        473     ERR_INVITEONLYCHAN
+                        "<canal> :No se puede unir al canal (+i)"
+        474     ERR_BANNEDFROMCHAN
+                        "<canal> :No se puede unir al canal (+b)"
+        475     ERR_BADCHANNELKEY
+                        "<canal> :No se puede unir al canal (+k)"
+        481     ERR_NOPRIVILEGES
+                        ":Permiso denegado- No es Operador de IRC"
+
+                - Un comando que requiera privilegios de Operador debe
+                  devolver este error para indicar que el intento falló
+
+        482     ERR_CHANOPRIVSNEEDED
+                        "<canal> :No es operador de canal"
+
+                - Cualquier comando que requiera privilegios de
+                  operador de canal (por ejemplo los mensajes MODE)
+                  debe devolver este error si el cliente que lo ejecuta
+                  no es operador de canal en el canal especificado
+
+        483     ERR_CANTKILLSERVER
+                        ":No se puede killear un servidor!"
+
+
+
+Oikarinen & Reed                                              [Pág. 46]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+                - Cualquier intento de usar el comando KILL con un
+                  servidor debe rechazarse y devolverse este error al
+                  cliente
+
+        491     ERR_NOOPERHOST
+                        ":No hay O-lines para su host"
+
+                - Si un cliente envía un mensaje OPER y el servidor no
+                  está configurado para permitir conexiones de Operador
+                  desde el host del cliente, debe devolverse este error
+
+        501     ERR_UMODEUNKNOWNFLAG
+                        ":Modo desconocido"
+
+                - Devuelto por el servidor para indicar que un mensaje
+                  MODE se envió con un parámetro de modo desconocido
+
+        502     ERR_USERSDONTMATCH
+                        ":No se pueden cambiar modos a otros usuarios"
+
+                - Error enviado a un usuario que intenta ver o cambiar
+                  un modo de un usuario distinto de sí mismo
+
+6.2 Respuestas a comandos
+
+        300     RPL_NONE
+                        Número de respuesta falso. No se usa
+
+        302     RPL_USERHOST
+                        ":[<respuesta>{<espacio><respuesta>}]"
+
+                - Formato de respuesta usado por USERHOST para listar
+                  las respuestas. La cadena de respuesta se compone de
+                  la siguiente forma:
+
+                <respuesta>::=<nick>['*'] '=' <'+'|'-'><nombre de host>
+
+                  El '*' indica si el cliente se ha registrado como
+                  Operador. El '-' o '+' representan si el cliente está
+                  o no "AWAY", respectivamente.
+
+        303     RPL_ISON
+                        ":[<nick> {<espacio><nick>}]"
+
+                - Formato de respuesta usado por ISON para listar su
+                  respuesta
+
+        301     RPL_AWAY
+                        "<nick> :<mensaje de away>"
+
+
+
+
+Oikarinen & Reed                                              [Pág. 47]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+        305     RPL_UNAWAY
+                        ":Ya no se le marca como ausente"
+        306     RPL_NOWAWAY
+                        ":Está usted marcado como ausente"
+
+                - Estas respuestas se usan con el comando AWAY (si está
+                  activado). RPL_AWAY se envía a cualquier cliente que
+                  envía un PRIVMSG a otro cliente que esté ausente.
+                  RPL_AWAY sólo lo envía el servidor al que está
+                  conectado el cliente que envía el PRIVMSG. Las
+                  respuestas RPL_UNAWAY y RPL_NOWAWAY se envían cuando
+                  el cliente quita y pone el mensaje de ausencia.
+
+        311     RPL_WHOISUSER
+                        "<nick> <usuario> <host> * :<nombre real>"
+        312     RPL_WHOISSERVER
+                        "<nick> <servidor> :<información del servidor>"
+        313     RPL_WHOISOPERATOR
+                        "<nick> :es Operador de IRC"
+        317     RPL_WHOISIDLE
+                        "<nick> <entero> :segundos inactivo"
+        318     RPL_ENDOFWHOIS
+                        "<nick> :Fin de la lista /WHOIS"
+        319     RPL_WHOISCHANNELS
+                        "<nick> :{[@|+]<canal><espacio>}"
+
+                - Las respuestas 311 - 313, 317 - 319 se generan tras
+                  un mensaje WHOIS. Supuesto que hay suficientes
+                  parámetros, el servidor que contesta debe formular
+                  una respuesta a partir de los números de arriba (si
+                  se encuentra el nick) o devolver un error. El '*' en
+                  RPL_WHOISUSER es un carácter literal y no un comodín.
+                  Para cada conjunto de respuestas, únicamente
+                  RPL_WHOISCHANNELS puede aparecer más de una vez
+                  (listas de canales largas). Los caracteres '@' y '+'
+                  al lado del nombre de canal indican si el cliente es
+                  operador de canal o tiene permiso para hablar en un
+                  canal moderado. La respuesta RPL_ENDOFWHOIS se usa
+                  para marcar el final del procesamiento de un mensaje
+                  WHOIS.
+
+        314     RPL_WHOWASUSER
+                        "<nick> <usuario> <host> * :<nombre real>"
+        369     RPL_ENDOFWHOWAS
+                        "<nick> :Fin de la lista /WHOWAS"
+
+                - Al responder a un mensaje de WHOWAS, un servidor debe
+                  usar las respuestas RPL_WHOWASUSER, RPL_WHOISSERVER o
+                  ERR_WASNOSUCHNICK para cada nick en la lista
+                  presentada. Al final de los lotes de respuesa, debe
+
+
+
+Oikarinen & Reed                                              [Pág. 48]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+                  estar RPL_ENDOFWHOWAS (incluso si sólo hubo una
+                  respuesta y esta fue un error).
+
+        321     RPL_LISTSTART
+                        "Canal :Usuarios  Nombre"
+        322     RPL_LIST
+                        "<canal> <# visible> :<tópico>"
+        323     RPL_LISTEND
+                        ":Fin de /LIST"
+
+                - Las respuestas RPL_LISTSTART, RPL_LIST, RPL_LISTEND
+                  marcan el principio, la respuesta en sí y el final de
+                  la contestación del servidor al comando LIST. Si no
+                  hay canales que devolver, sólo se envían las
+                  respuestas de inicio y fin.
+
+        324     RPL_CHANNELMODEIS
+                        "<canal> <modo> <parámetros de modo>"
+
+        331     RPL_NOTOPIC
+                        "<canal> :No hay tópico establecido"
+        332     RPL_TOPIC
+                        "<canal> :<tópico>"
+
+                - Cuando se envía un mensaje TOPIC para determinar el
+                  tópico del canal, se envía una de las dos respuestas.
+                  Si hay tópico establecido, se envía RPL_TOPIC, en
+                  otro caso, RPL_NOTOPIC.
+
+        341     RPL_INVITING
+                        "<canal> <nick>"
+
+                - Indica que el mensaje INVITE se ejecutó con éxito y
+                  se está pasando al cliente destino.
+
+        342     RPL_SUMMONING
+                        "<usuario> :Llamando usuario al IRC"
+
+                - Devuelto por un servidor respondiendo un mensaje
+                  SUMMON para indicar que está invocando al usuario.
+
+        351     RPL_VERSION
+                        "<versión>.<nivel de depuración> <servidor> :\
+                         <comentarios>"
+
+                - Respuesta del servidor que muestra los detalles de su
+                  versión. La <versión> es la del programa que se está
+                  usando (incluidos las revisiones de los parches) y el
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 49]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+                  <nivel de depuración> indica si el servidor está en
+                  "modo de depuración".
+
+                  El campo <comentarios> puede contener comentarios
+                  sobre la versión o detalles adicionales de versión.
+
+        352     RPL_WHOREPLY
+                        "<canal> <usuario> <host> <servidor> <nick> \
+                      <H|G>[*][@|+] :<contador de salto> <nombre real>"
+        315     RPL_ENDOFWHO
+                        "<nombre> :Fin de la lista /WHO"
+
+                - RPL_WHOREPLY y RPL_ENDOFWHO se usan para contestar a
+                  un mensaje WHO. RPL_WHOREPLY sólo se envía si hay una
+                  entrada apropiada a la petición de WHO. Si hay una
+                  lista de parámetros en el mensaje WHO, se debe enviar
+                  un RPL_ENDOFWHO después de procesar cada elemento de
+                  la lista, siendo <nombre> el elemento.
+
+        353     RPL_NAMREPLY
+                        "<canal> :[[@|+]<nick> [[@|+]<nick> [...]]]"
+        366     RPL_ENDOFNAMES
+                        "<canal> :Fin de la lista /NAMES"
+
+                - Para responder un mensaje NAMES, se envían al cliente
+                  una pareja de mensajes RPL_NAMREPLY y RPL_ENDOFNAMES.
+                  Si no se encuentra un canal como el de la petición,
+                  sólo se envía RPL_ENDOFNAMES. Una excepción a esto es
+                  si el mensaje NAMES se envía sin parámetros, en ese
+                  caso, se devuelven todos los canales visibles y sus
+                  contenidos en una serie de mensajes RPL_NAMEREPLY con
+                  un RPL_ENDOFNAMES marcando el final.
+
+        364     RPL_LINKS
+                        "<máscara> <servidor> :<contador de salto> \
+                        <información del servidor>"
+        365     RPL_ENDOFLINKS
+                        "<máscara> :Fin de la lista /LINKS"
+
+                - Al contestar un mensaje LINKS, el servidor debe
+                  enviar respuestas usando RPL_LINKS y marcar el final
+                  con RPL_ENDOFLINKS.
+
+        367     RPL_BANLIST
+                        "<canal> <identificación de ban>"
+        368     RPL_ENDOFBANLIST
+                        "<canal> :Fin de la lista de bans del canal"
+
+                - Cuando se listan los "bans" activos de un canal, el
+                  servidor debe devolver la lista usando los mensajes
+
+
+
+Oikarinen & Reed                                              [Pág. 50]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+                  RPL_BANLIST y RPL_ENDOFBANLIST. Se envía un
+                  RPL_BANLIST por separado para cada identificación de
+                  ban activo. Después de listarse todos (o si no hay
+                  ninguno), debe enviarse un RPL_ENDOFBANLIST.
+
+        371     RPL_INFO
+                        ":<cadena>"
+        374     RPL_ENDOFINFO
+                        ":Fin de lista /INFO"
+
+                - Un servidor que responda a un mensaje INFO debe
+                  enviar toda su información en una serie de mensajes
+                  RPL_INFO con un RPL_ENDOFINFO para indicar el final
+                  de la respuesta.
+
+        375     RPL_MOTDSTART
+                        ":- <servidor> Mensaje del día - "
+        372     RPL_MOTD
+                        ":- <texto>"
+        376     RPL_ENDOFMOTD
+                        ":Fin del comando /MOTD"
+
+                - Cuando se responde al mensaje MOTD y el archivo MOTD
+                  se encuentra, se muestra línea a línea, no superando
+                  cada una los 80 caracteres, usando el formato de
+                  repuesta de RPL_MOTD. Estos deberían abrirse y
+                  cerrarse con un RPL_MOTDSTART (antes de los RPL_MOTD)
+                  y un RPL_ENDOFMOTD (después).
+
+        381     RPL_YOUREOPER
+                        ":Es usted ahora Operador de IRC"
+
+                - RPL_YOUREOPER se envía a un cliente que acaba de
+                  ejecutar con éxito un comando OPER y obtenido estatus
+                  de Operador de IRC.
+
+        382     RPL_REHASHING
+                        "<archivo de configuración> :Reconfigurando"
+
+                - Si se usa la opción de REHASH y un Operador envía un
+                  mensaje de REHASH, se devuelve un RPL_REHASHING al
+                  Operador.
+
+        391     RPL_TIME
+                  "<servidor> :<cadena con la hora local del servidor>"
+
+                - Al responder al comando TIME, el servidor debe enviar
+                  la respuesta usando el formato de RPL_TIME de arriba.
+                  La cadena sólo debe contener el día y la hora
+                  correctos. No hay más requerimientos para la cadena.
+
+
+
+Oikarinen & Reed                                              [Pág. 51]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+        392     RPL_USERSSTART
+                        ":UserID   Terminal  Host"
+        393     RPL_USERS
+                        ":%-8s %-9s %-8s"
+        394     RPL_ENDOFUSERS
+                        ":Fin de usuarios"
+        395     RPL_NOUSERS
+                        ":Nadie conectado"
+
+                - Si un servidor recibe un comando USERS, se usan las
+                  respuestas RPL_USERSTART, RPL_USERS, RPL_ENDOFUSERS y
+                  RPL_NOUSERS. RPL_USERSSTART debe enviarse primero,
+                  seguido de una sequencia de RPL_USERS o bien de un
+                  sólo RPL_NOUSER. Tras esto se envía RPL_ENDOFUSERS.
+
+        200     RPL_TRACELINK
+                        "Enlace <versión & nivel de depuración> \
+                        <destino> <siguiente servidor>"
+        201     RPL_TRACECONNECTING
+                        "Intentando <clase> <servidor>"
+        202     RPL_TRACEHANDSHAKE
+                        "H.S. <clase> <servidor>"
+        203     RPL_TRACEUNKNOWN
+                        "???? <clase> [<dirección IP del cliente en \
+                        forma de números separados por puntos>]"
+        204     RPL_TRACEOPERATOR
+                        "Operador <clase> <nick>"
+        205     RPL_TRACEUSER
+                        "Usuario <clase> <nick>"
+        206     RPL_TRACESERVER
+                        "Servidor <clase> <int>S <int>C <servidor> \
+                         <nick!usuario|*!*>@<host|servidor>"
+        208     RPL_TRACENEWTYPE
+                        "<nuevo tipo> 0 <nombre de cliente>"
+        261     RPL_TRACELOG
+                        "Archivo <archivo de registro> <nivel de \
+                        depuración>"
+
+                - Los RPL_TRACE* los devuelve el servidor en respuesta
+                  a un comando TRACE. Cuántos se devuelvan depende en
+                  el mensaje TRACE y si lo envió un Operador o no. No
+                  hay un orden predefinido de respuesta. Las respuestas
+                  RPL_TRACEUNKNOWN, RPL_TRACECONNECTING y
+                  RPL_TRACEHANDSHAKE se usan para conexiones que no se
+                  han acabado de establecer y, o son desconocidas o
+                  todavía está intentando conectar o completando el
+                  "choque de manos" del servidor. RPL_TRACELINK lo
+                  envía un servidor que recibe un mensaje de TRACE y
+                  que tiene que pasarlo a otro. La lista de
+                  RPL_TRACELINKs enviados en respuesta a un comando
+
+
+
+Oikarinen & Reed                                              [Pág. 52]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+                  TRACE que atraviesa la red de IRC debería reflejar la
+                  conectividad real de los servidores a través de la
+                  ruta. RPL_TRACENEWTYPE se usará para una conexión que
+                  no entra en las otras categorías pero se muestra
+                  igualmente.
+
+        211     RPL_STATSLINKINFO
+                        "<nombre de enlace> <cola de envío [senq]> \
+                         <mensajes enviados> <bytes enviados> \
+                         <mensajes recibidos> <bytes recibidos> \
+                         <tiempo de conexión>"
+        212     RPL_STATSCOMMANDS
+                        "<comando> <contador>"
+        213     RPL_STATSCLINE
+                        "C <host> * <nombre> <puerto> <clase>"
+        214     RPL_STATSNLINE
+                        "N <host> * <nombre> <puerto> <clase>"
+        215     RPL_STATSILINE
+                        "I <host> * <host> <puerto> <clase>"
+        216     RPL_STATSKLINE
+                        "K <host> * <nombre de usuario> <puerto> <clase>"
+        218     RPL_STATSYLINE
+                        "Y <clase> <frecuencia de ping> <frecuencia de \
+                         conexión> <máximo sendq>"
+        219     RPL_ENDOFSTATS
+                        "<información de estado> :Fin de informe de \
+                         /STATS"
+        241     RPL_STATSLLINE
+                        "L <máscara de host> * <nombre de servidor> \
+                         <profundidad máxima>"
+        242     RPL_STATSUPTIME
+                        ":Servidor Activo %d días %d:%02d:%02d"
+        243     RPL_STATSOLINE
+                        "O <máscara de host> * <nombre>"
+        244     RPL_STATSHLINE
+                        "H <máscara de host> * <nombre de servidor>"
+
+        221     RPL_UMODEIS
+                        "<cadena de modo de usuario>"
+                        - Se envía para consultar el modo de un usuario
+
+        251     RPL_LUSERCLIENT
+                        ":Hay <entero1> usuarios y <entero2> invisibles
+                          en <entero3> servidores
+
+        252     RPL_LUSEROP
+                        "<entero> :Operador(es) conectado(s)"
+
+        253     RPL_LUSERUNKNOWN
+                        "<entero> :conexion(es) desconocida(s)"
+
+
+
+Oikarinen & Reed                                              [Pág. 53]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+        254     RPL_LUSERCHANNELS
+                        "<entero> :canal(es) creado(s)"
+
+        255     RPL_LUSERME
+                        ":Tengo <entero1> clientes y <entero2> \
+                          servidores"
+
+                        - Al procesar un mensaje LUSERS, el servidor
+                          envía un conjunto de respuestas de
+                          RPL_LUSERCLIENT, RPL_LUSEROP,
+                          RPL_USERUNKNOWN, RPL_LUSERCHANNELS y
+                          RPL_LUSERME. Al responder, el servidor debe
+                          enviar RPL_LUSERCLIENT and RPL_LUSERME. Las
+                          otras respuestas sólo se envían si hay un
+                          contador no a cero para ellas.
+
+        256     RPL_ADMINME
+                        "<servidor> :Información de administrador"
+        257     RPL_ADMINLOC1
+                        ":<información de administrador>"
+        258     RPL_ADMINLOC2
+                        ":<información de administrador>"
+        259     RPL_ADMINEMAIL
+                        ":<información de administrador>"
+
+                        - Al responder a un mensaje ADMIN, un servidor
+                          tiene que usar las respuestas RLP_ADMINME a
+                          RPL_ADMINEMAIL y proporcionar un mensaje de
+                          texto con cada una. Para RPL_ADMINLOC1 se
+                          espera una descripción de la ciudad, estado y
+                          país, seguido por los detalles de la
+                          universidad y departamento (RPL_ADMINLOC2), y
+                          finalmente, el contacto de administrador del
+                          servidor (se requiere una dirección de correo
+                          electrónico) en RPL_ADMINEMAIL.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 54]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+6.3 Respuestas reservadas
+
+   Estas respuestas no se describen arriba ya que caen en una de las
+   siguientes categorías:
+
+        1. ya no se usan;
+
+        2. están reservadas para usos futuros;;
+
+        3. están en uso pero son parte de características no genéricas
+           del servidor.
+
+        209     RPL_TRACECLASS          217     RPL_STATSQLINE
+        231     RPL_SERVICEINFO         232     RPL_ENDOFSERVICES
+        233     RPL_SERVICE             234     RPL_SERVLIST
+        235     RPL_SERVLISTEND
+        316     RPL_WHOISCHANOP         361     RPL_KILLDONE
+        362     RPL_CLOSING             363     RPL_CLOSEEND
+        373     RPL_INFOSTART           384     RPL_MYPORTIS
+        466     ERR_YOUWILLBEBANNED     476     ERR_BADCHANMASK
+        492     ERR_NOSERVICEHOST
+
+7. AUTENTICACION DE CLIENTE Y SERVIDOR
+
+   Los clientes y los servidores están sujetos ambos al mismo nivel de
+   atenticación. Para ambos, se realiza una búsqueda de número IP y
+   nombre de host (y la comprobación inversa de éste) para cada
+   conexión hecha al servidor. Ambas conexiones están sujetas después a
+   una comprobación de clave (si hay una clave establecida para esa
+   conexión). Estas comprobaciones son posibles en todas las conexiones
+   aunque la comprobación de clave sólo se usa habitualmente con
+   servidores.
+
+   Una comprobación que se está haciendo más común es la del usuario
+   responsable de la conexión. Encontrar el usuario del otro lado de la
+   conexión normalmente requiere la conexión a un servidor de
+   autenticación como IDENT, descrito en el RFC 1413.
+
+   Dado que sin claves no es fácil de determinar fiablemente quién está
+   al otro lado de una conexión de red, se recomienda encarecidamente
+   el uso de claves en conexiones entre servidores además de otras
+   medidas como el uso de un servidor de ident.
+
+8. DETALLES DE IMPLEMENTACIÓN
+
+   La única implementación actual de este protocolo es el servidor de
+   IRC, versión 2.8. Versiones posteriores pueden implementar algunos o
+   todos los comandos descritos por este documento con mensajes de
+   NOTICE sustituyendo muchas de las respuestas numéricas. Por
+
+
+
+
+Oikarinen & Reed                                              [Pág. 55]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   desgracia, debido a los requerimientos de compatibilidad inversa, la
+   implementación de algunas partes de este documento varía con lo que
+   se expresa. Una diferencia importante es:
+
+        * reconocer cualquier carácter LF (Line Feed - Fin de Línea) o
+          CR (Carriage Return - Retorno de Carro) en cualquier parte de
+          un mensaje como el fin de dicho mensaje (en lugar de requerir
+          CR-LF)
+
+   El resto de esta sección trata de los puntos de mayor importancia
+   para aquellos que deseen implementar un servidor, pero la mayoría de
+   las partes se aplican también directamente a los clientes.
+
+8.1 Protocolo de red: TCP - porqué es adecuado usarlo aquí
+
+   El IRC se ha implementado sobre TCP ya que TCP proporciona un
+   protocolo de red fiable que encaja bien con este tipo de
+   "conferenciación". El uso de [multicast] IP es una alternativa, pero
+   no está demasiado disponible o soportada en la actualidad.
+
+8.1.1 Soporte de sockets UNIX
+
+   Dado que los sockets de dominio de UNIX permiten operaciones de
+   escucha/conexión, la implementación actual puede configurarse para
+   escuchar y aceptar conexiones tanto de cliente como servidor en un
+   socket de dominio UNIX. Estos se reconocen como sockets donde el
+   nombre de host comienza con un '/'.
+
+   Al proporcionar información sobre las conexiones en un socket de
+   dominio UNIX, el servidor debe colocar el nombre de host real en el
+   siito del camino (path) a no ser que se pregunte por el nombre del
+   socket.
+
+8.2 Análisis de comandos
+
+   Para proveer una Entrada/Salida de red útil y sin buffer para los
+   clientes y servidores, cada conexión obtiene su buffer de entrada
+   propio y privado en el cual se guardan los resultados de las
+   lecturas y análisis más recientes. Un tamaño de buffer de 512 bytes
+   se usa para guardar un mensaje completo, sin embargo, normalmente
+   podrá alojar varios comandos. El buffer privado se analiza después
+   de cada operación de lectura de mensajes válidos. Al tratar con
+   múltiples mensajes de un cliente en el buffer, debe tenerse cuidado
+   en caso de que uno resulte en la eliminación del cliente.
+
+8.3 Envío de mensajes
+
+   Es común encontrar enlaces de red saturados o hosts a los que usted
+   envía datos pero que es incapaz de enviar datos. Aunque UNIX
+   normalmente maneja esto a través de la ventana TCP y búffers
+   internos, el servidor tiene a menudo grandes cantidades de datos
+
+
+Oikarinen & Reed                                              [Pág. 56]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+   para enviar (especialmente cuando se forma un nuevo enlace servidor-
+   servidor) y los pequeños búffers del núcleo no son suficientes para
+   la cola de salida. Para aliviar este problema, se usa una "cola de
+   envío" como cola FIFO para los datos a enviar. Una "cola de envío"
+   típica puede ser de hasta 200 Kilobytes en una red IRC grande con
+   conexiones lentas en la conexión de un nuevo servidor.
+
+   Al elegir sus conexiones, un servidor debe leer y analizar primero
+   todos los datos de entrada, encolando los datos a enviar. Cuando se
+   procesen todas las entradas disponibles, se envían los datos de la
+   cola. Esto reduce el número de llamadas de sistema a write() y ayuda
+   a TCP a hacer paquetes más grandes.
+
+8.4 Vida de una conexión
+
+   Para detectar cuando una conexión ha muerto o no responde, el
+   servidor debe comprobar cada una de sus conexiones (mandar ping) de
+   las que no tenga respuestas en un intervalo de tiempo dado.
+
+   Si una conexión no responde a tiempo, su conexión se cierra usando
+   los procedimientos adecuados. La conexión también se cierra si su
+   cola de envío crece por encima del máximo permitido, porque es mejor
+   cerrar una conexión lenta que tener el proceso de un servidor
+   bloqueado.
+
+8.5 Estableciendo una conexión cliente-servidor
+
+   Tras conectarse a un servidor IRC, se envía al cliente el MOTF (si
+   se encuentra), además del contador actual de usuarios/servidores
+   (como se presenta por el comando LUSER). El servidor debe además dar
+   un mensaje no ambiguo al cliente que indique su nombre y versión,
+   así como cualquier otro mensaje introductorio que pueda considerarse
+   apropiado.
+
+   Tras esto, el servidor debe enviar el nick del nuevo usuario y otra
+   información proporcionada por él mismo (comando USER) y que el
+   servidor pueda descubrir (de servidores DNS/autenticación). El
+   servidor debe enviar esta información con NICK primero, seguido de
+   USER.
+
+8.6 Estableciendo una conexión servidor-servidor
+
+   El proceso del establecimiento de una conexión servidor-servidor no
+   está exenta de riesgo ya que hay muchas partes en las que puede
+   haber problemas - los menores son condiciones de carrera.
+
+   Después de que un servidor reciba una conexión seguida de un par
+   PASS/SERVER que se han reconocido como válidos, el servidor debería
+   responder con su propia información PASS/SERVER para esa conexión al
+   igual que toda la información de estado que conozca de la forma
+   descrita a continuación.
+
+   Cuando el servidor que inicia la conexión recibe un par PASS/SERVER,
+
+Oikarinen & Reed                                              [Pág. 57]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+   chequea que el servidor que responde se ha autenticado correctamente
+   antes de acecptar que la conexión sea de ese servidor.
+
+8.6.1 Intercambio de información de estado al conectar
+
+   El orden de la información de estado que se intercambia entre los
+   servidores es fundamental. El orden requerido es el siguiente:
+
+        * todos los otros servidores conocidos;
+
+        * toda la información sobre los usuarios conocidos;
+
+        * toda la información de los canales conocidos.
+
+   La información referente a los servidores se envía por mensajes
+   SERVER extra, la información de usuarios con mensajes NICK/USER/
+   MODE/JOIN y los canales con mensajes MODE.
+
+   NOTA: los tópicos de canal *NO* se intercambian aquí ya que el
+   comando TOPIC sobreescribe cualquier información anterior del mismo.
+
+   Al pasar primero la información de estado sobre los servidores,
+   cualquier colisión con servidores que ya existen ocurren antes de
+   las colisiones de nick debidas a un segundo servidor que introduce
+   un nick en particular. Debido a que la red de IRC sólo existe como
+   grafo acíclico, es posible que la red ya se haya reconectado en otra
+   posición, el lugar de la colisión indicando dónde debe separarse la
+   red.
+
+8.7 Finalización de conexiones cliente-servidor
+
+   Cuando se cierra una conexión de cliente, el servidor al cual el
+   cliente conectó genera un mensaje de QUIT en representación del
+   cliente. No se genera o usa otro mensaje.
+
+8.8 Finalización de conexiones servidor-servidor
+
+   Si se cierra una conexión servidor-servidor, bien via un SQUIT
+   remoto o por causas "naturales", el resto de la red IRC debe
+   actualizar su información del servidor que detectó el cierre de la
+   conexión. El servidor envía una lista de SQUITs (una por cada
+   servidor tras esa conexión cerrada) y una lista de QUITs (de nuevo,
+   una por cada cliente tras esa conexión).
+
+
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 58]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+8.9 Seguimiento de cambios de nick
+
+   Todos los servidores IRC deben mantener un registro histórico de los
+   cambios de nick recientes. Esto es obligatorio para permitir que el
+   servidor tenga la ocasión de seguir la pista de los cambios cuando se
+   dan condiciones de carrera en cambios de nick, debidas a las órdenes
+   que los manipulan. Los comandos que deben seguir los cambios de nick
+   son:
+
+        * KILL (el nick que se expulsa del IRC)
+
+        * MODE (+/- o,v)
+
+        * KICK (el nick que se expulsa del canal)
+
+   Ningún otro comando tiene que comprobar cambios de nick.
+
+   En los casos anteriores, el servidor debe comprobar primero la
+   existencia del nick, después chequear su historial para ver a quién
+   pertenece ese nick en la actualidad (si existe). Esto reduce las
+   posibilidades de carrera pero aún pueden ocurrir y acabar en que el
+   servidor actúe sobre el nick equivocado. Al hacer un seguimiento de
+   cambio para un comando de los anteriores se recomienda dar un
+   intervalo de tiempo y las entradas que sean muy antiguas ignorarlas.
+
+   Para un historial razonable, un servidor debería ser capaz de
+   mantener nicks anteriores para cada cliente que conoce si todos
+   decidieron cambiarlo. El tamaño viene limitado por otros factores
+   (tales como memoria, etc).
+
+8.10 Control de flood de clientes
+
+   En una red grande de servidores de IRC, es fácil que un solo cliente
+   conectado a la red proporcione un flujo continuo de mensajes que
+   resulten no sólo en una "inundación" de la red, sino también en la
+   degradación del servicio a los demás. Más que requerir la protección
+   de cada "víctima", la protección contra flood se incluyó en el
+   servidor y se aplica a todos los clientes salvo a los servicios. El
+   algoritmo actual es el siguiente:
+
+
+        * comprobar si el "contador de mensaje" del cliente es menor
+          que la hora actual (se pone igual si lo es);
+
+
+        * leer datos del cliente;
+
+        * mientras el contador sea menor de diez segundos por delante
+          de la hora actual, analizar cualquier mensaje y penalizar al
+          cliente con 2 segundos por mensaje;
+
+
+
+Oikarinen & Reed                                              [Pág. 59]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+   lo que, en esencia, significa que el cliente puede enviar 1 mensaje
+   cada 2 segundos si verse afectado.
+
+
+8.11 Búsquedas sin bloqueos
+
+   En un entorno de tiempo real, es esencial que el proceso de un
+   servidor espere lo menos posible de forma que se sirva a todos los
+   clientes de forma justa. Obviamente esto requiere que no haya
+   bloqueos de Entrada/Salida en las operaciones de lectura/escritura.
+   Para conexiones de servidores normales, esto no es difícil, pero hay
+   otras operaciones que pueden ocasionar un bloqueo del servidor (como
+   lecturas de disco). Cuando sea posible, estas actividades deberían
+   realizarse con una pausa corta.
+
+8.11.1 Resolución de nombre de host (DNS)
+
+   El uso de las librerías de resolución de Berkeley y otras ha
+   significado importantes retardos en algunos casos en que las
+   respuestas han expirado. Para evitar esto, se escribió un conjunto
+   aparte de rutinas DNS, las cuales fueron diseñadas para operaciones
+   de E/S sin bloqueo y sacadas fuera del bucle principal de E/S del
+   servidor.
+
+8.11.2 Búsqueda de nombre de usuario (Ident)
+
+   Aunque hay muchas bibliotecas de ident, ocasionaron problemas ya que
+   operaban de forma síncrona y resultaba en retrasos frecuentes. La
+   solución, de nuevo, fue escribir unas rutinas que cooperaban con el
+   resto del servidor y trabajan usando E/S sin bloqueo.
+
+8.12 Archivo de configuración
+
+   Para proporcionar una forma flexible de configurar y ejecutar el
+   servidor, se recomienda el uso de un archivo de configuración que
+   contenga instrucciones al servidor referentes a:
+
+        * de qué hosts se aceptan conexiones cliente;
+
+        * de qué hosts se permiten conexiones de servidor;
+
+        * a qué hosts conectarse (activa y pasivamente);
+
+        * información sobre la localización del servidor (universidad,
+          ciudad/estado, compañía ...);
+
+        * quién es el responsable del servidor y una dirección de
+          correo electrónico de contacto;
+
+        * nombres de host y claves para los clientes que desean acceso
+          a los comandos restringidos de Operador.
+
+
+
+Oikarinen & Reed                                              [Pág. 60]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+   Al especificar nombres de host, tanto nombres de dominio como
+   notación "de punto" (127.0.0.1) deben aceptarse. Debe ser posible
+   especificar la clave usada/aceptada para todas las conexiones
+   entrantes y salientes (aunque las únicas conexiones salientes son a
+   otros servidores).
+
+   La lista anterior son los requerimientos mínimos para un servidor
+   que quiera conectarse a otro. Otros aspectos de utilidad son:
+
+        * especificar a qué servidores puede presentarse otro servidor;
+
+        * la profundidad máxima de la rama de un servidor;
+
+        * número máximo de horas de conexión de los clientes.
+
+8.12.1 Permitir la conexión de clientes
+
+   Un servidor debería usar alguna clase de "lista de control de
+   acceso" (bien en el archivo de configuración o en otra parte) que se
+   lea al iniciar y se use para decidir qué hosts pueden usar los
+   clientes para conectarse.
+
+   Tanto "denegar" como "permitir" deberían implementarse para
+   proporcionar la flexibilidad requerida para el control de acceso de
+   host.
+
+8.12.2 Operadores
+
+   La concesión de privilegios de Operador a una persona inapropiada
+   puede tener consecuencias directas para la buena marca de la red de
+   IRC en general debido a los poderes que se otorgan. Por esto, la
+   obtención de dichos poderes no debería ser fácil. La configuración
+   actual requiere dos claves aunque una de ellas normalmente es fácil
+   de averiguar. Es mejor guardar las claves de Operador en archivos de
+   configuración que incluirlas en el código y deberían guardarse en
+   formato encriptado (por ejemplo, usando crypt(3) de UNIX) para
+   evitar el robo fácil.
+
+8.12.3 Permitir la conexión de servidores
+
+   La interconexión de servidores no es un problema trivial: una mala
+   conexión puede tener un gran impacto en la utilidad del IRC. Por
+   ello, cada servidor debería tener una lista de los servidores a los
+   que se puede conectar y los que se pueden conectar a él. Bajo
+   ninguna circunstancia debe un servidor permitir la conexión de un
+   host cualquiera como servidor. Además de los servidores que pueden y
+   no pueden conectar, el archivo de configuración debería contener
+   también la clave y otras características del enlace.
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 61]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+8.12.4 Administración
+
+   Para proporcionar respuestas válidas y completas al comando ADMIN
+   (ver sección 4.3.7), el servidor debe incluir los detalles
+   relevantes en la configuración.
+
+8.13 Miembros de canales
+
+   El servidor actual permite a un usuario local registrado ser miembro
+   de hasta 10 canales diferentes. No hay límite para los usuarios no
+   locales de forma que el servidor sea (razonablemente) consistente
+   con todos los demás en base a los miembros de un canal.
+
+9. PROBLEMAS ACTUALES
+
+   Hay unos cuantos problemas relacionados con este protocolo, que se
+   espera que sean solventados en un futuro cercano. Actualmente, se
+   está trabajando para solucionar estos problemas.
+
+9.1 Escalabilidad
+
+   Se sabe perfectamente que este protocolo no escala suficientemente
+   bien cuando se usa de una forma muy masiva. El problema más
+   importante viene del requisito de que todos los servidores sepan
+   sobre los demás y sobre los usuarios, y que la información referente
+   a ellos se actualice al cambiar. También es deseable mantener un
+   reducido número de servidores para que la longitud del camino entre
+   dos puntos sea mínima y que el árbol de expansión esté lo más
+   ramificado posible.
+
+9.2 Etiquetas
+
+   El protocolo actual de IRC tiene tres tipos de etiquetas: nick,
+   nombre del canal y nombre del servidor. Cada uno de los tipos tiene
+   su propio dominio y no se permite duplicidad dentro de cada uno.
+   Actualmente es posible que los usuarios cojan la etiqueta de uno de
+   los tres, lo que acaba en colisiones. Se sabe que esto necesita más
+   trabajo, con un plan para nombres únicos para canales y nicks que no
+   colisionen, y una solución que permita un árbol cíclico.
+   N. del T.: un árbol por definición es acíclico (grafo sin ciclos),
+   pero se conserva la traducción literal.
+
+9.2.1 Nicks
+
+   La idea de nick en el IRC es muy conveniente de cara a los usuarios
+   para hablar entre ellos fuera de un canal, pero hay un espacio finito
+   de nicks y por lo que son, no es raro que varias personas quieran el
+   mismo. Si dos personas usando este protocolo escojen el mismo nick,
+   bien uno no lo conseguirá o los dos serán eliminados mediante el uso
+   de KILL (sección 4.6.1).
+
+
+
+Oikarinen & Reed                                              [Pág. 62]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+9.2.2 Canales
+
+   La composición de canales actual requiere que todos los servidores
+   conozcan sobre todos los canales, sus miembros y propiedades. Aparte
+   de no escalar bien, el asunto de la privacidad es también importante.
+   Una colisión entre canales se trata como evento inclusivo (los dos
+   que crearon el nuevo canal se consideran miembros de él) más que
+   exclusivo como en el caso de las colisiones de nicks.
+
+9.2.3 Servidores
+
+   Aunque el número de servidores normalmente es pequeño comparado con
+   el de usuarios y canales, ambos necesitan ser conocidos globalmente,
+   ya sea cada uno por separado o enmascarados.
+
+9.3 Algoritmos
+
+   En algunas porciones de código del servidor, no se han podido evitar
+   algoritmos N^2, como el chequeo de la lista de canales de un conjunto
+   de clientes.
+
+   En las versiones actuales del servidor, no hay chequeo de la
+   consistencia de la base de datos, cada servidor supone que el
+   servidor vecino es correcto. Esto abre las puertas a problemas
+   grandes si un servidor conectado está defectuoso o intenta introducir
+   contradicciones a la red.
+
+   En la actualidad, debido a la escasez de etiquetas internas y
+   globales únicas, hay muchas condiciones de carreras que pueden darse.
+   Estas normalmente vienen del tiempo que lleva a los mensajes
+   atravesar la red de IRC. Incluso cambiando a etiquetas únicas, hay
+   problemas de interrupción de comandos relacionados con los canales.
+
+10. SOPORTE Y DISPONIBILIDAD
+
+           Listas de correo para discusiones sobre IRC:
+                Protocolo futuro: ircd-three-request@eff.org
+                Discusión general: operlist-request@eff.org
+
+           Implementación de software:
+                cs.bu.edu:/irc
+                nic.funet.fi:/pub/irc
+                coombs.anu.edu.au:/pub/irc
+
+           Grupos de noticias: alt.irc
+
+
+11. ASUNTOS DE SEGURIDAD
+
+   Estos se discuten en las secciones 4.1, 4.1.1, 4.1.3, 5.5 y 7.
+
+
+
+Oikarinen & Reed                                              [Pág. 63]
+
+RFC 1459      Protocolo de Charla Basada en Internet           Mayo 1993
+
+
+
+12. DIRECCIONES DE LOS AUTORES
+
+   Jarkko Oikarinen
+   Tuirantie 17 as 9
+   90500 OULU
+   FINLANDIA
+
+   Correo electrónico: jto@tolsun.oulu.fi
+
+
+   Darren Reed
+   4 Pateman Street
+   Watsonia, Victoria 3087
+   Australia
+
+   Correo electrónico: avalon@coombs.anu.edu.au
+
+
+   Traductor:
+   Carlos García Argos
+   C/Antonio Trueba, 14; 4-8-2
+   29017 MALAGA
+   ESPAÑA/SPAIN
+   Correo electrónico: cgasoft@yahoo.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Oikarinen & Reed                                              [Pág. 64]

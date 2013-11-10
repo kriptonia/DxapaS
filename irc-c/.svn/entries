@@ -1,0 +1,52 @@
+8
+
+dir
+150
+http://daniela@svn2.assembla.com/svn/xapes/irc-c
+http://daniela@svn2.assembla.com/svn/xapes
+
+
+
+2008-05-27T21:11:39.631642Z
+9
+albert.sola
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+843fd666-81f2-4710-8602-7759cdb5ad05
+
+rfc1459-es.txt
+file
+
+
+
+
+2008-06-25T12:13:15.000000Z
+84b1ac1bd49e5d92d928d4954fe25668
+2008-05-27T21:11:39.631642Z
+9
+albert.sola
+
+main.c
+file
+
+
+
+
+2008-06-25T12:13:15.000000Z
+778b329391a945765d79746fbe165d1e
+2008-05-08T11:22:11.654848Z
+1
+daniela
+
